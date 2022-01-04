@@ -16,7 +16,8 @@ jobs:
         run: npm ci
       - run: npm run build
       - name: publish
-        uses: peaceiris/actions-github-pages@v3.7.3
+        uses: peaceiris/actions-github-pages@bbdfb200618d235585ad98e965f4aafc39b4c501
+
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
