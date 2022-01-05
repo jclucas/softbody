@@ -1,0 +1,23 @@
+name: deploy
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  deploy:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+      - name: install dependencies
+        run: npm ci
+      - run: npm run build
+      - name: publish
+        uses: peaceiris/actions-gh-pages@v3.7.3
+
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
