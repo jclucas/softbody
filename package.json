@@ -18,10 +18,14 @@
   },
   "homepage": "https://github.com/jclucas/softbody#readme",
   "dependencies": {
+    "cannon": "^0.6.2",
     "three": "^0.136.0"
   },
   "devDependencies": {
+    "@types/cannon": "^0.1.8",
+    "@types/three": "^0.136.0",
     "css-loader": "^6.5.1",
+    "file-loader": "^6.2.0",
     "html-webpack-plugin": "^5.5.0",
     "style-loader": "^3.3.1",
     "ts-loader": "^9.2.6",

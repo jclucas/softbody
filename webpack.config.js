@@ -5,6 +5,9 @@ const config = {
     entry: {
         index: './src/index.ts'
     },
+    resolve: {
+      extensions: ['.tsx', '.ts', '.js'],
+    },
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: '[name].js'
@@ -20,6 +23,16 @@ const config = {
             {
                 test: /\.css$/,
                 use: ['style-loader', 'css-loader'],
+            },
+            {
+                test: /\.obj$/,
+                use: {
+                    loader: 'file-loader',
+                    options: {
+                        esModule: false,
+                    },
+                },
+                exclude: /node_modules/,
             }
         ]
     },

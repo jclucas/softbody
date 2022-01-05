@@ -1,3 +1,9 @@
 body {
-    color: red;
+    max-width: 800px;
+    margin: 20px auto 0px auto;
+}
+
+canvas {
+    display: block;
+    cursor: none;
 }

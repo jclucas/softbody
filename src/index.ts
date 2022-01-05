@@ -1,3 +1,5 @@
-require('./style.css');
+import './style.css';
+import { MainDemo } from "./ts/demo-main";
 
-alert("Hello World");
+var demo = new MainDemo();
+demo.loop();
