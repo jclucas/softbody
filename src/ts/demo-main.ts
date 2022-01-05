@@ -1,27 +1,28 @@
-import { Body, Plane, Vec3, World } from "cannon";
-import * as THREE from "three";
-import { BufferGeometryUtils, Color, Scene } from "three";
+import * as THREE from 'three';
+import * as CANNON from 'cannon';
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
 
 import { Demo } from "./demo";
 import { PhysObject } from "./phys-object";
 import { bunny } from '../assets/bunny'
+import Hand from "./hand";
 
 export class MainDemo extends Demo {
+
+    hand: Hand
 
     constructor() {
         super('demo');
         this.init();
     }
 
-    initScene(scene: Scene, world: World, loader: GLTFLoader) {
+    initScene(scene: THREE.Scene, world: CANNON.World, loader: GLTFLoader) {
 
-        scene.background = new Color( 0x94bcbc );
+        scene.background = new THREE.Color( 0x94bcbc );
 
         // add a static surface
-        const floor_body = new Body({ mass: 0 });
-        const floor_shape = new Plane()
+        const floor_body = new CANNON.Body({ mass: 0 });
+        const floor_shape = new CANNON.Plane()
         floor_body.addShape(floor_shape);
         floor_body.position.set(0, -2, 0);
         floor_body.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
@@ -39,6 +40,46 @@ export class MainDemo extends Demo {
         const physObj = new PhysObject(bunny.vertices, bunny.indices, 10);
         this.add(physObj);
 
+        // for interaction with physics objects
+        this.hand = new Hand(world);
+
+    }
+
+    onMouseDown(position, raycaster: THREE.Raycaster) {
+        
+        // cast into cannon world
+        const ray = raycaster.ray;
+        const origin = new CANNON.Vec3(ray.origin.x, ray.origin.y, ray.origin.z);
+        const to = ray.direction.multiplyScalar(1000).add(ray.origin);
+        let result = new CANNON.RaycastResult();
+        this.world.rayTest(origin, new CANNON.Vec3(to.x, to.y, to.z), result);
+        console.log(result);
+
+        if (result.hasHit) {
+            this.hand.grab(result.body, result.hitPointWorld);
+        }
+
+        // save location of clicked camera plane
+        var worldPos = new THREE.Vector3();
+        worldPos.set(result.hitPointWorld.x, result.hitPointWorld.y, result.hitPointWorld.z);
+        this.mouseDepth = worldPos.project(this.camera).z;
+
+    }
+
+    onMouseDrag(position) {
+    
+        // unproject mouse position into world space
+        var worldPosition = new THREE.Vector3(position.x, position.y, this.mouseDepth);
+        worldPosition = worldPosition.unproject(this.camera);
+
+
+        // update object position
+        const pos = new CANNON.Vec3(worldPosition.x, worldPosition.y, worldPosition.z);
+        this.hand.move(pos);
+    }
+
+    onMouseUp() {
+        this.hand.release();
     }
 
 }
