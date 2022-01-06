@@ -1,19 +1,17 @@
-import { Body, Trimesh } from "cannon";
-import * as THREE from "three";
-import { Mesh, MeshPhongMaterial } from "three";
+import * as CANNON from 'cannon';
+import * as THREE from 'three';
+import { Mesh, MeshPhongMaterial } from 'three';
 
 export class PhysObject {
 
     mesh: THREE.Mesh;
     bodies: CANNON.Body[];
 
-    edges
-
     /**
      * Read geometry to a new physics object.
-     * @param {Array} vertices array of CANNON.Vec3 vertices
-     * @param {Array} faces array of arrays of vertex indices
-     * @param {Number} mass of CANNON.Body
+     * @param vertices array of CANNON.Vec3 vertices
+     * @param faces array of arrays of vertex indices
+     * @param mass of CANNON.Body
      */
     constructor(vertices: number[], indices: number[], mass: number) {
 
@@ -21,9 +19,8 @@ export class PhysObject {
         indices.forEach((index, i, arr) => arr[i] = index - 1);
 
         // create cannon.js body
-        const shape = new Trimesh(vertices, indices);
-        console.log(shape);
-        const body = new Body({ mass: mass });
+        const shape = new CANNON.Trimesh(vertices, indices);
+        const body = new CANNON.Body({ mass: mass });
         this.bodies = [];
         this.bodies.push(body);
         body.addShape(shape);

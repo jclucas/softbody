@@ -3,9 +3,9 @@ import * as CANNON from 'cannon';
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
 import { Demo } from "./demo";
-import { PhysObject } from "./phys-object";
-import { bunny } from '../assets/bunny'
+import { box } from '../assets/box'
 import Hand from "./hand";
+import { SoftObject } from './soft-object';
 
 export class MainDemo extends Demo {
 
@@ -37,7 +37,7 @@ export class MainDemo extends Demo {
         scene.add(floor_mesh);
 
         // add test object
-        const physObj = new PhysObject(bunny.vertices, bunny.indices, 10);
+        const physObj = new SoftObject(box.vertices, box.indices, 10);
         this.add(physObj);
 
         // for interaction with physics objects
@@ -53,7 +53,6 @@ export class MainDemo extends Demo {
         const to = ray.direction.multiplyScalar(1000).add(ray.origin);
         let result = new CANNON.RaycastResult();
         this.world.rayTest(origin, new CANNON.Vec3(to.x, to.y, to.z), result);
-        console.log(result);
 
         if (result.hasHit) {
             this.hand.grab(result.body, result.hitPointWorld);
@@ -71,7 +70,6 @@ export class MainDemo extends Demo {
         // unproject mouse position into world space
         var worldPosition = new THREE.Vector3(position.x, position.y, this.mouseDepth);
         worldPosition = worldPosition.unproject(this.camera);
-
 
         // update object position
         const pos = new CANNON.Vec3(worldPosition.x, worldPosition.y, worldPosition.z);

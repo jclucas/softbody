@@ -3,6 +3,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { World } from 'cannon'
 
 import { PhysObject } from './phys-object'
+import { SoftObject } from './soft-object';
 
 /**
  * Extensible class with code for physics, rendering, ui
@@ -114,14 +115,24 @@ export class Demo {
      * Add a physics object to the state
      * @param {PhysObject} obj 
      */
-      add(obj: PhysObject): void {
+      add(obj: SoftObject): void {
         
         this.scene.add(obj.mesh);
         obj.bodies.forEach((b: CANNON.Body) => {
             this.world.addBody(b);
         });
         this.objects.push(obj);
-    
+        obj.debugMeshes.forEach((m) => {
+            this.scene.add(m);
+        });
+
+        // add springs
+        this.world.addEventListener('postStep', function(event) {
+            obj.springs.forEach(spring => {
+                spring.applyForce();
+            }); 
+        });
+
     }
 
     /**
