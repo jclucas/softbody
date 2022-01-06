@@ -33,6 +33,7 @@ export class PhysObject {
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
         geometry.setIndex(new THREE.Uint16BufferAttribute(indices, 1));
+        geometry.computeVertexNormals();
         geometry.computeBoundingSphere();
         this.mesh = new Mesh(geometry, material);
 
