@@ -3,7 +3,9 @@ import * as CANNON from 'cannon';
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
 import { Demo } from "./demo";
+import { box_quad } from '../assets/box-quad'
 import { box } from '../assets/box'
+import { bunny } from '../assets/bunny'
 import Hand from "./hand";
 import { SoftObject } from './soft-object';
 
@@ -37,7 +39,7 @@ export class MainDemo extends Demo {
         scene.add(floor_mesh);
 
         // add test object
-        const physObj = new SoftObject(box.vertices, box.indices, 10);
+        const physObj = new SoftObject(box_quad.vertices, box_quad.faces, 10);
         this.add(physObj);
 
         // for interaction with physics objects

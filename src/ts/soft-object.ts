@@ -20,12 +20,26 @@ export class SoftObject implements PhysObject {
      * @param faces array of arrays of vertex indices
      * @param mass of CANNON.Body
      */
-    constructor(vertices: number[], indices: number[], mass: number) {
+    constructor(vertices: number[], faces: number[][], mass: number) {
 
         // due to converting from obj
-        indices.forEach((index, i, arr) => arr[i] = index - 1);
+        faces.forEach((face: number[]) => {
+            face.forEach((index, i, arr) => arr[i] = index - 1);
+        });
 
-        this.shape = new CANNON.Trimesh(vertices, indices);
+        const indices_tri = []
+
+        // triangulate
+        faces.forEach(face => {
+            if (face.length === 3) {
+                indices_tri.push(...face);
+            } else if (face.length === 4) {
+                indices_tri.push(face[0], face[1], face[2]);
+                indices_tri.push(face[2], face[3], face[0]);
+            }
+        });
+
+        this.shape = new CANNON.Trimesh(vertices, indices_tri);
 
         this.bodies = [];
 
@@ -58,28 +72,26 @@ export class SoftObject implements PhysObject {
         this.springs = [];
 
         // add spring between each vertex
-        for (let i = 0; i < indices.length; i+= 3) {
-            
-            const a = indices[i];
-            const b = indices[i+1];
-            const c = indices[i+2];
+        faces.forEach(face => {
 
-            [[a, b], [b, c], [c, a]].forEach(pair => {
-                const vec1 = new THREE.Vector3(vertices[3*a], vertices[3*a+1], vertices[3*a+2]);
-                const vec2 = new THREE.Vector3(vertices[3*b], vertices[3*b+1], vertices[3*b+2]);
+            const pairs = face.map((p1, i) => face.slice(i + 1).map(p2 => [p1, p2])).flat();
+
+            pairs.forEach(pair => {
+                const vec1 = new THREE.Vector3(vertices[3*pair[0]], vertices[3*pair[0]+1], vertices[3*pair[0]+2]);
+                const vec2 = new THREE.Vector3(vertices[3*pair[1]], vertices[3*pair[1]+1], vertices[3*pair[1]+2]);
                 const spring = new CANNON.Spring({ restLength: vec1.distanceTo(vec2)});
                 spring.bodyA = this.bodies[pair[0]];
                 spring.bodyB = this.bodies[pair[1]];
                 this.springs.push(spring);
             });
 
-        }
+        });
 
         // create three.js mesh
         const material = new MeshPhongMaterial({ color: 0xff0000, side: THREE.DoubleSide });
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-        geometry.setIndex(new THREE.Uint16BufferAttribute(indices, 1));
+        geometry.setIndex(new THREE.Uint16BufferAttribute(indices_tri, 1));
         geometry.computeVertexNormals();
         geometry.computeBoundingSphere();
         this.mesh = new Mesh(geometry, material);
