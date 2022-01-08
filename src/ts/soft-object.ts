@@ -9,7 +9,7 @@ export class SoftObject implements PhysObject {
     shape: CANNON.Trimesh;
     bodies: CANNON.Body[];
     springs: CANNON.Spring[];
-    
+
     pressure: number = 100;
     
     debugMeshes: THREE.Mesh[];
@@ -65,7 +65,9 @@ export class SoftObject implements PhysObject {
             const c = indices[i+2];
 
             [[a, b], [b, c], [c, a]].forEach(pair => {
-                const spring = new CANNON.Spring();
+                const vec1 = new THREE.Vector3(vertices[3*a], vertices[3*a+1], vertices[3*a+2]);
+                const vec2 = new THREE.Vector3(vertices[3*b], vertices[3*b+1], vertices[3*b+2]);
+                const spring = new CANNON.Spring({ restLength: vec1.distanceTo(vec2)});
                 spring.bodyA = this.bodies[pair[0]];
                 spring.bodyB = this.bodies[pair[1]];
                 this.springs.push(spring);
