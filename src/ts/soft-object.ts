@@ -6,9 +6,12 @@ import { PhysObject } from "./phys-object";
 export class SoftObject implements PhysObject {
 
     mesh: THREE.Mesh;
+    shape: CANNON.Trimesh;
     bodies: CANNON.Body[];
     springs: CANNON.Spring[];
-
+    
+    pressure: number = 100;
+    
     debugMeshes: THREE.Mesh[];
 
     /**
@@ -22,8 +25,7 @@ export class SoftObject implements PhysObject {
         // due to converting from obj
         indices.forEach((index, i, arr) => arr[i] = index - 1);
 
-        const shape = new CANNON.Trimesh(vertices, indices);
-        shape.updateEdges();
+        this.shape = new CANNON.Trimesh(vertices, indices);
 
         this.bodies = [];
 
@@ -91,6 +93,10 @@ export class SoftObject implements PhysObject {
 
         this.bodies.forEach((body, i) => {
             vertices.setXYZ(i, body.position.x, body.position.y, body.position.z);
+            this.shape.vertices[3 * i] = body.position.x;
+            this.shape.vertices[3 * i + 1] = body.position.y;
+            this.shape.vertices[3 * i + 2] = body.position.z;
+            this.shape.updateBoundingSphereRadius();
             this.debugMeshes[i].position.set(body.position.x, body.position.y, body.position.z);
         });
 
@@ -110,15 +116,15 @@ export class SoftObject implements PhysObject {
             scene.add(m);
         });
         
-        // add spring force callback
-        world.addEventListener('postStep', this.springForce.bind(this));
+        // add additional force callback
+        world.addEventListener('postStep', this.postStep.bind(this));
 
     }
 
     removeSelf(scene: THREE.Scene, world: CANNON.World): void {
 
-        // add spring force callback
-        world.removeEventListener('postStep', this.springForce.bind(this));
+        // add additional force callback
+        world.removeEventListener('postStep', this.postStep.bind(this));
 
         this.debugMeshes.forEach((m: THREE.Mesh) => {
             scene.remove(m);
@@ -132,10 +138,26 @@ export class SoftObject implements PhysObject {
 
     }
 
-    springForce() {
+    postStep() {
+        
+        // apply spring force
         this.springs.forEach(spring => {
-                spring.applyForce();
-            });
+            spring.applyForce();
+        });
+
+        // apply volume force
+        const force = 1 / this.shape.volume() * this.getSurfaceArea() * this.pressure;
+        const normals = this.mesh.geometry.getAttribute('normal');
+        this.bodies.forEach((body, i) => {
+            const normal = new CANNON.Vec3(normals.getX(i), normals.getY(i), normals.getZ(i));
+            body.applyForce(normal.scale(force), body.pointToWorldFrame(new CANNON.Vec3()));
+        });
+
+    }
+
+    getSurfaceArea() {
+        this.shape.updateBoundingSphereRadius();
+        return this.shape.boundingSphereRadius * 4 * Math.PI / 3;
     }
 
 }
