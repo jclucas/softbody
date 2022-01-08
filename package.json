@@ -5,7 +5,7 @@
   "private": "true",
   "scripts": {
     "build": "webpack",
-    "start": "webpack serve"
+    "start": "webpack serve --no-client-overlay"
   },
   "repository": {
     "type": "git",

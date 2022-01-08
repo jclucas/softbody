@@ -21,7 +21,7 @@ export class Demo {
 
     // physics
     world: CANNON.World;
-    objects: any[];
+    objects: PhysObject[];
 
     // UI
     cursor: Mesh;
@@ -115,24 +115,11 @@ export class Demo {
      * Add a physics object to the state
      * @param {PhysObject} obj 
      */
-      add(obj: SoftObject): void {
+      add(obj: PhysObject): void {
         
-        this.scene.add(obj.mesh);
-        obj.bodies.forEach((b: CANNON.Body) => {
-            this.world.addBody(b);
-        });
+        obj.addSelf(this.scene, this.world);
         this.objects.push(obj);
-        obj.debugMeshes.forEach((m) => {
-            this.scene.add(m);
-        });
-
-        // add springs
-        this.world.addEventListener('postStep', function(event) {
-            obj.springs.forEach(spring => {
-                spring.applyForce();
-            }); 
-        });
-
+    
     }
 
     /**
@@ -141,11 +128,8 @@ export class Demo {
      */
     remove(index: number): void {
 
-        var obj = this.objects[index];
-        obj.bodies.forEach((b: CANNON.Body) => {
-            this.world.remove(b);
-        });
-        this.scene.remove(obj.mesh);
+        const obj = this.objects[index];
+        obj.removeSelf(this.scene, this.world);
         this.objects.splice(index, 1);
 
     }
@@ -179,19 +163,6 @@ export class Demo {
 
         this.renderer.clear();
         this.renderer.render(this.scene, this.camera);
-
-    }
-
-    static readShape(data, mass) {
-
-        var phys_vertices = [];
-
-        // get vertices
-        for (var i = 0; i < data.vertices.length; i += 3) {
-            phys_vertices.push(new CANNON.Vec3(data.vertices[i], data.vertices[i+1], data.vertices[i+2]));
-        }
-
-        return new PhysObject(phys_vertices, data.faces, mass);
 
     }
 

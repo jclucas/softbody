@@ -2,7 +2,18 @@ import * as CANNON from 'cannon';
 import * as THREE from 'three';
 import { Mesh, MeshPhongMaterial } from 'three';
 
-export class PhysObject {
+export interface PhysObject {
+
+    mesh: THREE.Mesh;
+    bodies: CANNON.Body[];
+
+    update(): void;
+    addSelf(scene: THREE.Scene, world: CANNON.World): void;
+    removeSelf(scene: THREE.Scene, world: CANNON.World): void;
+
+}
+
+export class SolidObject implements PhysObject {
 
     mesh: THREE.Mesh;
     bodies: CANNON.Body[];
@@ -47,5 +58,25 @@ export class PhysObject {
         this.mesh.quaternion.set(dir.x, dir.y, dir.z, dir.w);
 
     };
+    
+    addSelf(scene: THREE.Scene, world: CANNON.World): void  {
+
+        scene.add(this.mesh);
+
+        this.bodies.forEach((b: CANNON.Body) => {
+            world.addBody(b);
+        });
+
+    }
+
+    removeSelf(scene: THREE.Scene, world: CANNON.World): void {
+
+        this.bodies.forEach((b: CANNON.Body) => {
+            world.remove(b);
+        });
+
+        scene.remove(this.mesh);
+
+    }
 
 }

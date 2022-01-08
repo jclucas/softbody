@@ -1,8 +1,9 @@
 import * as CANNON from "cannon";
 import * as THREE from "three";
 import { Mesh, MeshPhongMaterial } from "three";
+import { PhysObject } from "./phys-object";
 
-export class SoftObject {
+export class SoftObject implements PhysObject {
 
     mesh: THREE.Mesh;
     bodies: CANNON.Body[];
@@ -96,5 +97,45 @@ export class SoftObject {
         vertices.needsUpdate = true;
 
     };
+
+    addSelf(scene: THREE.Scene, world: CANNON.World): void  {
+
+        scene.add(this.mesh);
+
+        this.bodies.forEach((b: CANNON.Body) => {
+            world.addBody(b);
+        });
+
+        this.debugMeshes.forEach((m: THREE.Mesh) => {
+            scene.add(m);
+        });
+        
+        // add spring force callback
+        world.addEventListener('postStep', this.springForce.bind(this));
+
+    }
+
+    removeSelf(scene: THREE.Scene, world: CANNON.World): void {
+
+        // add spring force callback
+        world.removeEventListener('postStep', this.springForce.bind(this));
+
+        this.debugMeshes.forEach((m: THREE.Mesh) => {
+            scene.remove(m);
+        });
+
+        this.bodies.forEach((b: CANNON.Body) => {
+            world.remove(b);
+        });
+
+        scene.remove(this.mesh);
+
+    }
+
+    springForce() {
+        this.springs.forEach(spring => {
+                spring.applyForce();
+            });
+    }
 
 }
