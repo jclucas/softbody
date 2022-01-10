@@ -10,7 +10,7 @@ export class SoftObject implements PhysObject {
     bodies: CANNON.Body[];
     springs: CANNON.Spring[];
 
-    pressure: number = 100;
+    pressure: number = 200;
     
     debugMeshes: THREE.Mesh[];
 
@@ -162,9 +162,14 @@ export class SoftObject implements PhysObject {
         // apply volume force
         const force = 1 / this.shape.volume() * this.getSurfaceArea() * this.pressure;
         const normals = this.mesh.geometry.getAttribute('normal');
+        
+        let center = new CANNON.Vec3();
+        this.bodies.forEach(body => center.vadd(body.position, center));
+        center.scale(1 / this.bodies.length, center);
+
         this.bodies.forEach((body, i) => {
-            const normal = new CANNON.Vec3(normals.getX(i), normals.getY(i), normals.getZ(i));
-            body.applyForce(normal.scale(force), body.pointToWorldFrame(new CANNON.Vec3()));
+            const normal = body.position.vsub(center).unit();
+            body.applyForce(normal.scale(force), body.position);
         });
 
     }

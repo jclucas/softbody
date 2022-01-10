@@ -39,7 +39,7 @@ export class MainDemo extends Demo {
         scene.add(floor_mesh);
 
         // add test object
-        const physObj = new SoftObject(box_quad.vertices, box_quad.faces, 10);
+        const physObj = new SoftObject(box.vertices, box.faces, 10);
         this.add(physObj);
 
         // for interaction with physics objects
