@@ -115,6 +115,7 @@ export class SoftObject implements PhysObject {
         });
 
         vertices.needsUpdate = true;
+        this.mesh.geometry.computeVertexNormals();
 
     };
 
