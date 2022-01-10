@@ -31,15 +31,29 @@ export class MainDemo extends Demo {
         world.addBody(floor_body);
 
         // corresponding mesh
-        const floor_geom = new THREE.PlaneGeometry(5, 5);
+        const floor_geom = new THREE.PlaneGeometry(20, 10);
         floor_geom.rotateX(-Math.PI / 2);
         floor_geom.translate(0, -2, 0);
-        const floor_mat = new THREE.MeshLambertMaterial({ color: 0xffffff });
+        const floor_mat = new THREE.MeshLambertMaterial({ color: 0xf0f0f0 });
         const floor_mesh = new THREE.Mesh(floor_geom, floor_mat);
         scene.add(floor_mesh);
 
+        // add a static wall
+        const wall_body = new CANNON.Body({ mass: 0 });
+        const wall_shape = new CANNON.Plane()
+        wall_body.addShape(wall_shape);
+        wall_body.position.set(0, 0, -5);
+        world.addBody(wall_body);
+
+        // corresponding mesh
+        const wall_geom = new THREE.PlaneGeometry(20, 10);
+        wall_geom.translate(0, 0, -5);
+        const wall_mat = new THREE.MeshLambertMaterial({ color: 0xf0f0f0 });
+        const wall_mesh = new THREE.Mesh(wall_geom, wall_mat);
+        scene.add(wall_mesh);
+
         // add test object
-        const physObj = new SoftObject(box.vertices, box.faces, 10);
+        const physObj = new SoftObject(box_quad.vertices, box_quad.faces, 10);
         this.add(physObj);
 
         // for interaction with physics objects
