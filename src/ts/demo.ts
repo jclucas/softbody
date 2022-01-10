@@ -4,6 +4,7 @@ import { World } from 'cannon'
 
 import { PhysObject } from './phys-object'
 import { SoftObject } from './soft-object';
+import * as THREE from 'three';
 
 /**
  * Extensible class with code for physics, rendering, ui
@@ -214,12 +215,12 @@ export class Demo {
 
     initLighting(lights: THREE.Light[]): void {
 
-        let light = new DirectionalLight();
-        light.position.set(10, 10, 10);
+        const light = new THREE.PointLight();
+        light.position.set(0, 15, 10);
         light.castShadow = true;
         lights.push(light);
 
-        let ambient = new AmbientLight(0x444444, 1);
+        const ambient = new AmbientLight(0x444444, 1);
         lights.push(ambient);
 
     }
