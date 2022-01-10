@@ -1,11 +1,9 @@
-import { AmbientLight, DirectionalLight, Euler, Mesh, MeshLambertMaterial, PerspectiveCamera, Quaternion, Raycaster, Scene, SphereGeometry, Vector2, Vector3, WebGLRenderer } from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
-import { World } from 'cannon'
-
-import { PhysObject } from './phys-object'
-import { SoftObject } from './soft-object';
+import * as CANNON from 'cannon';
 import * as THREE from 'three';
 
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
+
+import { PhysObject } from './phys-object'
 /**
  * Extensible class with code for physics, rendering, ui
  */
@@ -25,7 +23,7 @@ export class Demo {
     objects: PhysObject[];
 
     // UI
-    cursor: Mesh;
+    cursor: THREE.Mesh;
 
     // mouse interaction
     mouse: THREE.Vector2;
@@ -44,20 +42,20 @@ export class Demo {
 
         // CAMERA
         
-        this.camera = new PerspectiveCamera(50, aspect, 1, 1000);
+        this.camera = new THREE.PerspectiveCamera(50, aspect, 1, 1000);
 
         // SCENE
 
-        this.scene = new Scene();
+        this.scene = new THREE.Scene();
 
         // PHYSICS WORLD
 
-        this.world = new World();
+        this.world = new CANNON.World();
         this.world.gravity.set(0, -9.8, 0);
 
         // RENDERER
 
-        this.renderer = new WebGLRenderer();
+        this.renderer = new THREE.WebGLRenderer();
         this.renderer.setSize(this.width, this.height);
         element.appendChild(this.renderer.domElement);
         this.renderer.autoClear = false;
@@ -94,16 +92,16 @@ export class Demo {
 
         // INTERACTION
         
-        this.mouse = new Vector2();
-        this.raycaster = new Raycaster();
+        this.mouse = new THREE.Vector2();
+        this.raycaster = new THREE.Raycaster();
         this.mouseDepth = .5; 
 
         // create cursor
-        const cursor_geom = new SphereGeometry(0.1);
-        const cursor_mat = new MeshLambertMaterial({ color: 0xffffbb });
-        this.cursor = new Mesh(cursor_geom, cursor_mat);
+        const cursor_geom = new THREE.SphereGeometry(0.1);
+        const cursor_mat = new THREE.MeshLambertMaterial({ color: 0xffffbb });
+        this.cursor = new THREE.Mesh(cursor_geom, cursor_mat);
         this.cursor.translateX(-10); // hide until active
-        let rotation = new Quaternion().setFromEuler(new Euler(Math.PI/2, -Math.PI/2, Math.PI/6));
+        let rotation = new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI/2, -Math.PI/2, Math.PI/6));
         this.cursor.setRotationFromQuaternion(rotation.premultiply(this.camera.quaternion));
         this.scene.add(this.cursor);
 
@@ -169,14 +167,14 @@ export class Demo {
 
     //// MOUSE INTERACTION
 
-    onMouseMoveEvent(event) {
+    onMouseMoveEvent(event: MouseEvent) {
 
         // save mouse position for raycaster
         this.mouse.x = (event.offsetX/ this.width) * 2 - 1;
         this.mouse.y = -(event.offsetY / this.height) * 2 + 1;
 
         // move cursor on cursor plane
-        var mousePos = new Vector3(this.mouse.x, this.mouse.y, this.mouseDepth);
+        var mousePos = new THREE.Vector3(this.mouse.x, this.mouse.y, this.mouseDepth);
         mousePos = mousePos.unproject(this.camera);
         this.cursor.position.copy(mousePos);
 
@@ -188,7 +186,7 @@ export class Demo {
         
     }
 
-    onMouseDownEvent(event) {
+    onMouseDownEvent(event: MouseEvent) {
 
         this.mouseDown = true;
 
@@ -199,7 +197,7 @@ export class Demo {
 
     }
 
-    onMouseUpEvent(event) {
+    onMouseUpEvent(event: MouseEvent) {
         this.mouseDown = false;
         this.onMouseUp();
     }
@@ -209,7 +207,7 @@ export class Demo {
     initCamera(camera: THREE.Camera): void {
 
         camera.position.set(0, 0, 5);
-        camera.setRotationFromEuler(new Euler(-5 * Math.PI / 180, 0, 0));
+        camera.setRotationFromEuler(new THREE.Euler(-5 * Math.PI / 180, 0, 0));
 
     }
 
@@ -220,21 +218,21 @@ export class Demo {
         light.castShadow = true;
         lights.push(light);
 
-        const ambient = new AmbientLight(0x444444, 1);
+        const ambient = new THREE.AmbientLight(0x444444, 1);
         lights.push(ambient);
 
     }
 
-    initScene(scene: THREE.Scene, world: CANNON.World, loader: GLTFLoader) {}
+    initScene(scene: THREE.Scene, world: CANNON.World, loader) {}
 
-    initUI(scene, world, loader) {}
+    initUI(scene: THREE.Scene, world: CANNON.World, loader) {}
     
-    onMouseDown(position, raycaster) {}
+    onMouseDown(position: {x: number, y: number}, raycaster: THREE.Raycaster) {}
 
     onMouseUp() {}
 
-    onMouseMove(position) {}
+    onMouseMove(position: {x: number, y: number}) {}
 
-    onMouseDrag(position) {}
+    onMouseDrag(position: {x: number, y: number}) {}
 
 }
