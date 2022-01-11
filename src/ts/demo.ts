@@ -2,6 +2,7 @@ import * as CANNON from 'cannon';
 import * as THREE from 'three';
 
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
+import Stats from 'three/examples/jsm/libs/stats.module'
 
 import { PhysObject } from './phys-object'
 /**
@@ -24,6 +25,7 @@ export class Demo {
 
     // UI
     cursor: THREE.Mesh;
+    stats: Stats;
 
     // mouse interaction
     mouse: THREE.Vector2;
@@ -59,6 +61,10 @@ export class Demo {
         this.renderer.setSize(this.width, this.height);
         element.appendChild(this.renderer.domElement);
         this.renderer.autoClear = false;
+
+        // add stats panel
+        this.stats = Stats();
+        element.appendChild(this.stats.domElement);
 
         // bind event listeners
         element.addEventListener("mousemove", this.onMouseMoveEvent.bind(this));
@@ -155,6 +161,7 @@ export class Demo {
         requestAnimationFrame(this.loop);
         this.update();
         this.render();
+        this.stats.update();
 
     }
 
