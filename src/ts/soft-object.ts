@@ -10,7 +10,9 @@ export class SoftObject implements PhysObject {
     bodies: CANNON.Body[];
     springs: CANNON.Spring[];
 
-    pressure: number = 100;
+    pressure: number = 10;
+    stiffness: number = 10;
+    damping: number = 0.2;
     
     debugMeshes: THREE.Mesh[];
 
@@ -56,12 +58,12 @@ export class SoftObject implements PhysObject {
             const z = vertices[i+2];
 
             const body = new CANNON.Body({ mass: pt_mass });
-            body.addShape(new CANNON.Sphere(0.1));
+            body.addShape(new CANNON.Sphere(0.05));
             body.position.set(x, y, z);
             this.bodies.push(body);
 
             // debug meshes
-            const geom = new THREE.SphereGeometry(0.1);
+            const geom = new THREE.SphereGeometry(0.05);
             const mat = new MeshPhongMaterial({ color: 0xff0088, side: THREE.DoubleSide });
             const mesh = new Mesh(geom, mat);
             mesh.position.set(x, y, z);
@@ -79,9 +81,13 @@ export class SoftObject implements PhysObject {
             pairs.forEach(pair => {
                 const vec1 = new THREE.Vector3(vertices[3*pair[0]], vertices[3*pair[0]+1], vertices[3*pair[0]+2]);
                 const vec2 = new THREE.Vector3(vertices[3*pair[1]], vertices[3*pair[1]+1], vertices[3*pair[1]+2]);
-                const spring = new CANNON.Spring({ restLength: vec1.distanceTo(vec2)});
+                const spring = new CANNON.Spring();
                 spring.bodyA = this.bodies[pair[0]];
                 spring.bodyB = this.bodies[pair[1]];
+                spring.restLength = vec1.distanceTo(vec2);
+                // @ts-ignore
+                spring.stiffness = this.stiffness;
+                spring.damping = this.damping;
                 this.springs.push(spring);
             });
 
@@ -115,6 +121,8 @@ export class SoftObject implements PhysObject {
         });
 
         vertices.needsUpdate = true;
+
+        this.mesh.geometry.computeBoundingSphere();
         this.mesh.geometry.computeVertexNormals();
 
     };

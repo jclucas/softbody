@@ -36,9 +36,8 @@ export class Demo {
     constructor(id: string) {
 
         // DOM
-        
-        let element = document.getElementById(id);
-        let aspect = 4 / 3;
+        const element = document.getElementById(id);
+        const aspect = 4 / 3;
         this.width = element.offsetWidth;
         this.height = this.width / aspect;
 
@@ -144,11 +143,15 @@ export class Demo {
      */
     update(): void {
 
-        this.world.step(1 / 60);
-        
-        // update all physics objects
-        for (var i = 0; i < this.objects.length; i++) {
-            this.objects[i].update();
+        const steps = 2;
+
+        for (let step = 0; step < steps; step++) {
+            this.world.step(1 / 60 / steps);
+            
+            // update all physics objects
+            for (let i = 0; i < this.objects.length; i++) {
+                this.objects[i].update();
+            }
         }
 
     }
@@ -177,7 +180,7 @@ export class Demo {
     onMouseMoveEvent(event: MouseEvent) {
 
         // save mouse position for raycaster
-        this.mouse.x = (event.offsetX/ this.width) * 2 - 1;
+        this.mouse.x = (event.offsetX / this.width) * 2 - 1;
         this.mouse.y = -(event.offsetY / this.height) * 2 + 1;
 
         // move cursor on cursor plane
