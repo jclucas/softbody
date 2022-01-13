@@ -11,7 +11,7 @@ export class SoftObject implements PhysObject {
     springs: CANNON.Spring[];
 
     pressure: number = 10;
-    stiffness: number = 10;
+    stiffness: number = 50;
     damping: number = 0.2;
     
     debugMeshes: THREE.Mesh[];
@@ -73,12 +73,28 @@ export class SoftObject implements PhysObject {
 
         this.springs = [];
 
+        // keep track of vertex pairs that have been added
+        const added = new Map<number, number[]>();
+
         // add spring between each vertex
         faces.forEach(face => {
 
             const pairs = face.map((p1, i) => face.slice(i + 1).map(p2 => [p1, p2])).flat();
 
             pairs.forEach(pair => {
+
+                // check pair is not already added
+                if (added[pair[0]] && added[pair[0]].includes(pair[1])) {
+                    return;
+                }
+                
+                // add to pairs map
+                if (!added[pair[0]]) added[pair[0]] = [];
+                added[pair[0]].push(pair[1]);
+                if (!added[pair[1]]) added[pair[1]] = [];
+                added[pair[1]].push(pair[0]);
+
+                // add spring
                 const vec1 = new THREE.Vector3(vertices[3*pair[0]], vertices[3*pair[0]+1], vertices[3*pair[0]+2]);
                 const vec2 = new THREE.Vector3(vertices[3*pair[1]], vertices[3*pair[1]+1], vertices[3*pair[1]+2]);
                 const spring = new CANNON.Spring();
@@ -89,6 +105,7 @@ export class SoftObject implements PhysObject {
                 spring.stiffness = this.stiffness;
                 spring.damping = this.damping;
                 this.springs.push(spring);
+
             });
 
         });
