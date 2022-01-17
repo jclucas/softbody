@@ -216,7 +216,7 @@ export class Demo {
 
     initCamera(camera: THREE.Camera): void {
 
-        camera.position.set(0, 0, 5);
+        camera.position.set(0, 0, 10);
         camera.setRotationFromEuler(new THREE.Euler(-5 * Math.PI / 180, 0, 0));
 
     }
