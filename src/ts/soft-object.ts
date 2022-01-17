@@ -18,9 +18,9 @@ export class SoftObject implements PhysObject {
 
     type: SoftType = SoftType.PRESSURE;
 
-    pressure: number = this.type === SoftType.MASS_SPRING ? 0 : 10;
-    stiffness: number = 50;
-    damping: number = 0.2;
+    pressure: number;
+    stiffness: number;
+    damping: number;
     
     debugMeshes: THREE.Mesh[];
 
@@ -30,16 +30,16 @@ export class SoftObject implements PhysObject {
      * @param faces array of arrays of vertex indices
      * @param mass of CANNON.Body
      */
-    constructor(vertices: number[], faces: number[][], mass: number, type?: SoftType) {
+    constructor(vertices: number[], faces: number[][], mass: number, type?: SoftType, 
+        pressure = 10, stiffness = 50, damping = 0.2) {
 
         if (!!type) {
             this.type = type;
         }
 
-        // due to converting from obj
-        faces.forEach((face: number[]) => {
-            face.forEach((index, i, arr) => arr[i] = index - 1);
-        });
+        this.pressure = this.type === SoftType.MASS_SPRING ? 0 : pressure;
+        this.stiffness = stiffness;
+        this.damping = damping;
 
         const indices_tri = []
 
@@ -201,7 +201,9 @@ export class SoftObject implements PhysObject {
         
         // apply spring force
         this.springs.forEach(spring => {
-            spring.applyForce();
+            if (spring.bodyA && spring.bodyB) {
+                spring.applyForce();
+            }
         });
 
         // apply volume force

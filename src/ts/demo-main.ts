@@ -8,15 +8,17 @@ import { box } from '../assets/box'
 import { bunny } from '../assets/bunny'
 import { icosphere } from '../assets/icosphere'
 import Hand from "./hand";
-import { SoftObject } from './soft-object';
+import { SoftObject, SoftType } from './soft-object';
 import { icosphere_3 } from '../assets/icosphere-3';
 
 export class MainDemo extends Demo {
 
-    hand: Hand
+    hand: Hand;
+    geometry;
 
-    constructor() {
+    constructor(geometry) {
         super('demo');
+        this.geometry = geometry;
         this.init();
     }
 
@@ -70,12 +72,29 @@ export class MainDemo extends Demo {
         right_body.quaternion.setFromEuler(0, -Math.PI / 2, 0);
         world.addBody(right_body);
 
+        // due to converting from obj
+        this.geometry.faces.forEach((face: number[]) => {
+            face.forEach((index, i, arr) => arr[i] = index - 1);
+        });
+
         // add test object
-        const physObj = new SoftObject(icosphere_3.vertices, icosphere_3.faces, 10);
+        const physObj = new SoftObject(this.geometry.vertices, this.geometry.faces, 10, SoftType.PRESSURE);
         this.add(physObj);
 
         // for interaction with physics objects
         this.hand = new Hand(world);
+
+    }
+
+    respawn(pressure?: number, stiffness?: number, damping?: number) {
+
+        // remove existing body
+        this.remove(0);
+
+        // add new
+        const physObj = new SoftObject(this.geometry.vertices, this.geometry.faces, 10, SoftType.PRESSURE,
+            pressure, stiffness, damping);
+        this.add(physObj);
 
     }
 
