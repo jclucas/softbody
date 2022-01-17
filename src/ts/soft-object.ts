@@ -3,6 +3,12 @@ import * as THREE from "three";
 import { Mesh, MeshPhongMaterial } from "three";
 import { PhysObject } from "./phys-object";
 
+export enum SoftType {
+    MASS_SPRING,
+    PRESSURE,
+    HYBRID
+}
+
 export class SoftObject implements PhysObject {
 
     mesh: THREE.Mesh;
@@ -10,7 +16,9 @@ export class SoftObject implements PhysObject {
     bodies: CANNON.Body[];
     springs: CANNON.Spring[];
 
-    pressure: number = 10;
+    type: SoftType = SoftType.PRESSURE;
+
+    pressure: number = this.type === SoftType.MASS_SPRING ? 0 : 10;
     stiffness: number = 50;
     damping: number = 0.2;
     
@@ -22,7 +30,11 @@ export class SoftObject implements PhysObject {
      * @param faces array of arrays of vertex indices
      * @param mass of CANNON.Body
      */
-    constructor(vertices: number[], faces: number[][], mass: number) {
+    constructor(vertices: number[], faces: number[][], mass: number, type?: SoftType) {
+
+        if (!!type) {
+            this.type = type;
+        }
 
         // due to converting from obj
         faces.forEach((face: number[]) => {
@@ -79,7 +91,14 @@ export class SoftObject implements PhysObject {
         // add spring between each vertex
         faces.forEach(face => {
 
-            const pairs = face.map((p1, i) => face.slice(i + 1).map(p2 => [p1, p2])).flat();
+            let pairs: number[][];
+
+            if (this.type === SoftType.PRESSURE && face.length === 4) {
+                // no structural springs for pressure type
+                pairs = [[face[0], face[1]], [face[1], face[2]], [face[2], face[3]], [face[3], face[0]]];
+            } else {
+                pairs = face.map((p1, i) => face.slice(i + 1).map(p2 => [p1, p2])).flat();
+            }
 
             pairs.forEach(pair => {
 
