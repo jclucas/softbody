@@ -9,6 +9,7 @@ import { bunny } from '../assets/bunny'
 import { icosphere } from '../assets/icosphere'
 import Hand from "./hand";
 import { SoftObject } from './soft-object';
+import { icosphere_3 } from '../assets/icosphere-3';
 
 export class MainDemo extends Demo {
 
@@ -70,7 +71,7 @@ export class MainDemo extends Demo {
         world.addBody(right_body);
 
         // add test object
-        const physObj = new SoftObject(icosphere.vertices, icosphere.faces, 10);
+        const physObj = new SoftObject(icosphere_3.vertices, icosphere_3.faces, 10);
         this.add(physObj);
 
         // for interaction with physics objects
