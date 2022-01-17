@@ -53,6 +53,22 @@ export class MainDemo extends Demo {
         const wall_mesh = new THREE.Mesh(wall_geom, wall_mat);
         scene.add(wall_mesh);
 
+        // add a static wall
+        const left_body = new CANNON.Body({ mass: 0 });
+        const left_shape = new CANNON.Plane()
+        left_body.addShape(left_shape);
+        left_body.position.set(-7, 0, 0);
+        left_body.quaternion.setFromEuler(0, Math.PI / 2, 0);
+        world.addBody(left_body);
+
+        // add a static wall
+        const right_body = new CANNON.Body({ mass: 0 });
+        const right_shape = new CANNON.Plane()
+        right_body.addShape(right_shape);
+        right_body.position.set(7, 0, 0);
+        right_body.quaternion.setFromEuler(0, -Math.PI / 2, 0);
+        world.addBody(right_body);
+
         // add test object
         const physObj = new SoftObject(icosphere.vertices, icosphere.faces, 10);
         this.add(physObj);
