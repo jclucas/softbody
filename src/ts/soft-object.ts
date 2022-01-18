@@ -21,6 +21,8 @@ export class SoftObject implements PhysObject {
     pressure: number;
     stiffness: number;
     damping: number;
+
+    point_radius = 0.01;
     
     debugMeshes: THREE.Mesh[];
 
@@ -70,12 +72,12 @@ export class SoftObject implements PhysObject {
             const z = vertices[i+2];
 
             const body = new CANNON.Body({ mass: pt_mass });
-            body.addShape(new CANNON.Sphere(0.05));
+            body.addShape(new CANNON.Sphere(this.point_radius));
             body.position.set(x, y, z);
             this.bodies.push(body);
 
             // debug meshes
-            const geom = new THREE.SphereGeometry(0.05);
+            const geom = new THREE.SphereGeometry(this.point_radius);
             const mat = new MeshPhongMaterial({ color: 0xff0088, side: THREE.DoubleSide });
             const mesh = new Mesh(geom, mat);
             mesh.position.set(x, y, z);
@@ -137,6 +139,7 @@ export class SoftObject implements PhysObject {
         geometry.computeVertexNormals();
         geometry.computeBoundingSphere();
         this.mesh = new Mesh(geometry, material);
+        this.mesh.userData['soft'] = this;
 
     };
 

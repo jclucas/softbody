@@ -7,7 +7,7 @@ export default class Hand {
 
     world: CANNON.World;
     joint: CANNON.Body;
-    constraint: CANNON.PointToPointConstraint;
+    constraints: CANNON.PointToPointConstraint[];
     active: boolean;
 
     constructor(world: CANNON.World) {
@@ -22,8 +22,8 @@ export default class Hand {
         this.joint.collisionFilterMask = 0;
         this.world.addBody(this.joint);
 
-        // point-to-point constraint
-        this.constraint = null;
+        // point-to-point constraints
+        this.constraints = [];
 
         // true when we are holding something
         this.active = false;
@@ -44,14 +44,33 @@ export default class Hand {
         this.joint.position.copy(pos);
 
         // calculate pivot point (object space)
-        var relPos = pos.vsub(body.position);
-        var antiRot = body.quaternion.inverse();
-        var pivot = antiRot.vmult(relPos);
+        const relPos = pos.vsub(body.position);
+        const antiRot = body.quaternion.inverse();
+        const pivot = antiRot.vmult(relPos);
 
         // create and add constraint
-        this.constraint = new CANNON.PointToPointConstraint(body, pivot, this.joint, new CANNON.Vec3(0,0,0));
-        this.world.addConstraint(this.constraint);
+        const constraint = new CANNON.PointToPointConstraint(body, pivot, this.joint, new CANNON.Vec3(0,0,0));
+        this.constraints.push(constraint);
+        this.world.addConstraint(constraint);
 
+    }
+
+    grabFace(bodies: CANNON.Body[], pos: CANNON.Vec3) {
+
+        // register activity
+        this.active = true;
+
+        // move joint to click position
+        this.joint.position.set(pos.x, pos.y, pos.z);
+
+        bodies.forEach(body => {
+
+            // create and add constraint
+            const constraint = new CANNON.DistanceConstraint(body, this.joint, body.position.distanceTo(pos));
+            this.constraints.push(constraint);
+            this.world.addConstraint(constraint);
+
+        });
     }
 
     /**
@@ -60,8 +79,11 @@ export default class Hand {
     release() {
 
         // remove constraint
-        this.world.removeConstraint(this.constraint);
-        this.constraint = null;
+        this.constraints.forEach(constraint => {
+            this.world.removeConstraint(constraint);
+        });
+
+        this.constraints = [];
         this.active = false;
     
     }
@@ -75,7 +97,9 @@ export default class Hand {
         // update joint if we're holding something
         if (this.active) {
             this.joint.position.copy(pos);
-            this.constraint.update();
+            this.constraints.forEach(constraint => {
+                constraint.update();
+            });
         }
 
     }

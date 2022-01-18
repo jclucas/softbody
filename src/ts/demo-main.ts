@@ -3,13 +3,8 @@ import * as CANNON from 'cannon';
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
 import { Demo } from "./demo";
-import { box_quad } from '../assets/box-quad'
-import { box } from '../assets/box'
-import { bunny } from '../assets/bunny'
-import { icosphere } from '../assets/icosphere'
 import Hand from "./hand";
 import { SoftObject, SoftType } from './soft-object';
-import { icosphere_3 } from '../assets/icosphere-3';
 
 export class MainDemo extends Demo {
 
@@ -98,7 +93,7 @@ export class MainDemo extends Demo {
 
     }
 
-    onMouseDown(position, raycaster: THREE.Raycaster) {
+    onMouseDown(position, raycaster: THREE.Raycaster, hit: THREE.Intersection[]) {
         
         // cast into cannon world
         const ray = raycaster.ray;
@@ -107,21 +102,37 @@ export class MainDemo extends Demo {
         let result = new CANNON.RaycastResult();
         this.world.rayTest(origin, new CANNON.Vec3(to.x, to.y, to.z), result);
 
+        // if intersecting vertex, grab it
         if (result.hasHit) {
             this.hand.grab(result.body, result.hitPointWorld);
         }
 
-        // save location of clicked camera plane
-        var worldPos = new THREE.Vector3();
-        worldPos.set(result.hitPointWorld.x, result.hitPointWorld.y, result.hitPointWorld.z);
-        this.mouseDepth = worldPos.project(this.camera).z;
+        // if intersecting mesh, try to grab a face
+        if (hit.length && hit[0].object.userData['soft']) {
+            
+            const obj = hit[0].object.userData['soft']
+            const face = hit[0].face;
+            const point = new CANNON.Vec3(hit[0].point.x, hit[0].point.y, hit[0].point.z);
+            this.hand.grabFace([obj.bodies[face.a], obj.bodies[face.b], obj.bodies[face.c]], point);
+
+            // save location of clicked camera plane
+            this.mouseDepth = hit[0].point.project(this.camera).z
+
+        } else {
+
+            // save location of clicked camera plane
+            let worldPos = new THREE.Vector3();
+            worldPos.set(result.hitPointWorld.x, result.hitPointWorld.y, result.hitPointWorld.z);
+            this.mouseDepth = worldPos.project(this.camera).z
+
+        }
 
     }
 
     onMouseDrag(position) {
     
         // unproject mouse position into world space
-        var worldPosition = new THREE.Vector3(position.x, position.y, this.mouseDepth);
+        let worldPosition = new THREE.Vector3(position.x, position.y, this.mouseDepth);
         worldPosition = worldPosition.unproject(this.camera);
 
         // update object position

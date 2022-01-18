@@ -203,7 +203,10 @@ export class Demo {
         // update raycaster
         this.raycaster.setFromCamera(this.mouse, this.camera);
 
-        this.onMouseDown(this.mouse, this.raycaster);
+        // raycast scene (can't be done in child ?)
+        const hit = this.raycaster.intersectObjects(this.scene.children);
+
+        this.onMouseDown(this.mouse, this.raycaster, hit);
 
     }
 
@@ -237,7 +240,7 @@ export class Demo {
 
     initUI(scene: THREE.Scene, world: CANNON.World, loader) {}
     
-    onMouseDown(position: {x: number, y: number}, raycaster: THREE.Raycaster) {}
+    onMouseDown(position: {x: number, y: number}, raycaster: THREE.Raycaster, hit: THREE.Intersection[]) {}
 
     onMouseUp() {}
 
