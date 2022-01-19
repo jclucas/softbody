@@ -4,7 +4,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
 import { Demo } from "./demo";
 import Hand from "./hand";
-import { SoftObject, SoftType } from './soft-object';
+import { SoftObject, SoftOptions, SoftType } from './soft-object';
 
 type Geometry = {
     vertices: number[];
@@ -76,7 +76,7 @@ export class MainDemo extends Demo {
         });
 
         // add test object
-        const physObj = new SoftObject(this.geometry.vertices, this.geometry.faces, 10, SoftType.PRESSURE);
+        const physObj = new SoftObject(this.geometry.vertices, this.geometry.faces, 10);
         this.add(physObj);
 
         // for interaction with physics objects
@@ -89,9 +89,15 @@ export class MainDemo extends Demo {
         // remove existing body
         this.remove(0);
 
+        const options: SoftOptions = {
+            type: SoftType.PRESSURE,
+            pressure: pressure,
+            stiffness: stiffness,
+            damping: damping,
+        }
+
         // add new
-        const physObj = new SoftObject(this.geometry.vertices, this.geometry.faces, 10, SoftType.PRESSURE,
-            pressure, stiffness, damping);
+        const physObj = new SoftObject(this.geometry.vertices, this.geometry.faces, 10, options);
         this.add(physObj);
 
     }

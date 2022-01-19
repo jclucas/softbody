@@ -9,6 +9,15 @@ export enum SoftType {
     HYBRID
 }
 
+export interface SoftOptions {
+    type?: SoftType;
+    pressure?: number;
+    stiffness?: number;
+    damping?: number;
+    point_radius?: number;
+    point_damping?: number;
+}
+
 export class SoftObject implements PhysObject {
 
     mesh: THREE.Mesh;
@@ -22,8 +31,8 @@ export class SoftObject implements PhysObject {
     stiffness: number;
     damping: number;
 
-    point_radius = 0.01;
-    point_damping = 0.3
+    point_radius: number;
+    point_damping: number;
     
     debugMeshes: THREE.Mesh[];
 
@@ -33,16 +42,18 @@ export class SoftObject implements PhysObject {
      * @param faces array of arrays of vertex indices
      * @param mass of CANNON.Body
      */
-    constructor(vertices: number[], faces: number[][], mass: number, type?: SoftType, 
-        pressure = 1, stiffness = 50, damping = 0.2) {
+    constructor(vertices: number[], faces: number[][], mass: number, options?: SoftOptions) {
 
-        if (!!type) {
-            this.type = type;
-        }
+        this.type = options?.type ?? SoftType.PRESSURE;
 
-        this.pressure = this.type === SoftType.MASS_SPRING ? 0 : pressure;
-        this.stiffness = stiffness;
-        this.damping = damping;
+        // spring options
+        this.pressure = this.type === SoftType.MASS_SPRING ? 0 : options?.pressure ?? 1;
+        this.stiffness = options?.stiffness ?? 50;
+        this.damping = options?.damping ?? 0.2;
+
+        // point options
+        this.point_radius = options?.point_radius ?? 0.01;
+        this.point_damping = options?.point_damping ?? 0.3;
 
         const indices_tri = []
 
