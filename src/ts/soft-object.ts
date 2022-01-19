@@ -48,9 +48,9 @@ export class SoftObject implements PhysObject, SoftOptions {
         this.type = options?.type ?? SoftType.PRESSURE;
 
         // spring options
-        this.pressure = this.type === SoftType.MASS_SPRING ? 0 : options?.pressure ?? 1;
-        this.stiffness = options?.stiffness ?? 50;
-        this.damping = options?.damping ?? 0.2;
+        this.pressure = this.type === SoftType.MASS_SPRING ? 0 : options?.pressure ?? 5;
+        this.stiffness = options?.stiffness ?? 200;
+        this.damping = options?.damping ?? 0.4;
 
         // point options
         this.point_mass = options?.point_mass ?? 0.05;
@@ -222,7 +222,7 @@ export class SoftObject implements PhysObject, SoftOptions {
         });
 
         // apply volume force
-        const force = 1 / this.shape.volume() * this.getSurfaceArea() * this.pressure;
+        const force = 1 / this.getVolume() * this.getSurfaceArea() * this.pressure;
         
         let center = new CANNON.Vec3();
         this.bodies.forEach(body => center.vadd(body.position, center));
@@ -236,8 +236,47 @@ export class SoftObject implements PhysObject, SoftOptions {
     }
 
     getSurfaceArea() {
-        this.shape.updateBoundingSphereRadius();
-        return this.shape.boundingSphereRadius * this.shape.boundingSphereRadius * 4 * Math.PI;
+        
+        const tris = this.shape.indices.length / 3;
+        let surfaceArea = 0;
+
+        for (let i = 0; i < tris; i++) {
+            let a = new CANNON.Vec3();
+            let b = new CANNON.Vec3();
+            let c = new CANNON.Vec3();
+            this.shape.getTriangleVertices(i, a, b, c);
+            surfaceArea += area(a, b, c);
+        }
+
+        return Math.abs(surfaceArea);
+
     }
 
+    getVolume() {
+
+        const tris = this.shape.indices.length / 3;
+        let volume = 0;
+
+        for (let i = 0; i < tris; i++) {
+            let a = new CANNON.Vec3();
+            let b = new CANNON.Vec3();
+            let c = new CANNON.Vec3();
+            this.shape.getTriangleVertices(i, a, b, c);
+            volume += signedVolume(a, b, c);
+        }
+
+        return Math.abs(volume);
+
+    }
+
+}
+
+function signedVolume(a: CANNON.Vec3, b: CANNON.Vec3, c: CANNON.Vec3) {
+    return a.dot(b.cross(c)) / 6;
+}
+
+function area(a: CANNON.Vec3, b: CANNON.Vec3, c: CANNON.Vec3) {
+    const ab = b.vsub(a);
+    const ac = c.vsub(a);
+    return ab.cross(ac).norm() / 2;
 }
