@@ -1,6 +1,5 @@
 import * as CANNON from "cannon";
 import * as THREE from "three";
-import { Mesh, MeshPhongMaterial } from "three";
 import { PhysObject } from "./phys-object";
 
 export enum SoftType {
@@ -14,11 +13,12 @@ export interface SoftOptions {
     pressure?: number;
     stiffness?: number;
     damping?: number;
+    point_mass?: number;
     point_radius?: number;
     point_damping?: number;
 }
 
-export class SoftObject implements PhysObject {
+export class SoftObject implements PhysObject, SoftOptions {
 
     mesh: THREE.Mesh;
     shape: CANNON.Trimesh;
@@ -31,6 +31,7 @@ export class SoftObject implements PhysObject {
     stiffness: number;
     damping: number;
 
+    point_mass: number;
     point_radius: number;
     point_damping: number;
     
@@ -40,9 +41,9 @@ export class SoftObject implements PhysObject {
      * Read geometry to a new physics object.
      * @param vertices array of CANNON.Vec3 vertices
      * @param faces array of arrays of vertex indices
-     * @param mass of CANNON.Body
+     * @param options options object
      */
-    constructor(vertices: number[], faces: number[][], mass: number, options?: SoftOptions) {
+    constructor(vertices: number[], faces: number[][], options?: SoftOptions) {
 
         this.type = options?.type ?? SoftType.PRESSURE;
 
@@ -52,6 +53,7 @@ export class SoftObject implements PhysObject {
         this.damping = options?.damping ?? 0.2;
 
         // point options
+        this.point_mass = options?.point_mass ?? 0.05;
         this.point_radius = options?.point_radius ?? 0.01;
         this.point_damping = options?.point_damping ?? 0.3;
 
@@ -71,9 +73,6 @@ export class SoftObject implements PhysObject {
 
         this.bodies = [];
 
-        // mass of each point
-        const pt_mass = mass / vertices.length;
-
         this.debugMeshes = [];
 
         // for each vertex
@@ -83,7 +82,7 @@ export class SoftObject implements PhysObject {
             const y = vertices[i+1];
             const z = vertices[i+2];
 
-            const body = new CANNON.Body({ mass: pt_mass });
+            const body = new CANNON.Body({ mass: this.point_mass });
             body.addShape(new CANNON.Sphere(this.point_radius));
             body.position.set(x, y, z);
             body.linearDamping = this.point_damping; // air resistance
@@ -91,8 +90,8 @@ export class SoftObject implements PhysObject {
 
             // debug meshes
             const geom = new THREE.SphereGeometry(this.point_radius);
-            const mat = new MeshPhongMaterial({ color: 0xff0088, side: THREE.DoubleSide });
-            const mesh = new Mesh(geom, mat);
+            const mat = new THREE.MeshPhongMaterial({ color: 0xff0088, side: THREE.DoubleSide });
+            const mesh = new THREE.Mesh(geom, mat);
             mesh.position.set(x, y, z);
             this.debugMeshes.push(mesh);
 
@@ -145,13 +144,13 @@ export class SoftObject implements PhysObject {
         });
 
         // create three.js mesh
-        const material = new MeshPhongMaterial({ color: 0xff0000, side: THREE.DoubleSide });
+        const material = new THREE.MeshPhongMaterial({ color: 0xff0000, side: THREE.DoubleSide });
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
         geometry.setIndex(new THREE.Uint16BufferAttribute(indices_tri, 1));
         geometry.computeVertexNormals();
         geometry.computeBoundingSphere();
-        this.mesh = new Mesh(geometry, material);
+        this.mesh = new THREE.Mesh(geometry, material);
         this.mesh.userData['soft'] = this;
 
     };
@@ -229,7 +228,7 @@ export class SoftObject implements PhysObject {
         this.bodies.forEach(body => center.vadd(body.position, center));
         center.scale(1 / this.bodies.length, center);
 
-        this.bodies.forEach((body, i) => {
+        this.bodies.forEach((body) => {
             const normal = body.position.vsub(center).unit();
             body.applyForce(normal.scale(force), body.position);
         });

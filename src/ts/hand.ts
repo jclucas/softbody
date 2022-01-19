@@ -3,7 +3,7 @@ import * as CANNON from 'cannon';
 /**
 * Demo "hand" for interacting with objects.
 */
-export default class Hand {
+export class Hand {
 
     world: CANNON.World;
     joint: CANNON.Body;

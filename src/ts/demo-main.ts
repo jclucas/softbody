@@ -3,8 +3,8 @@ import * as CANNON from 'cannon';
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
 import { Demo } from "./demo";
-import Hand from "./hand";
-import { SoftObject, SoftOptions, SoftType } from './soft-object';
+import { Hand } from "./hand";
+import { SoftObject, SoftOptions } from './soft-object';
 
 type Geometry = {
     vertices: number[];
@@ -76,7 +76,7 @@ export class MainDemo extends Demo {
         });
 
         // add test object
-        const physObj = new SoftObject(this.geometry.vertices, this.geometry.faces, 10);
+        const physObj = new SoftObject(this.geometry.vertices, this.geometry.faces);
         this.add(physObj);
 
         // for interaction with physics objects
@@ -84,20 +84,13 @@ export class MainDemo extends Demo {
 
     }
 
-    respawn(pressure?: number, stiffness?: number, damping?: number) {
+    respawn(options: SoftOptions) {
 
         // remove existing body
         this.remove(0);
 
-        const options: SoftOptions = {
-            type: SoftType.PRESSURE,
-            pressure: pressure,
-            stiffness: stiffness,
-            damping: damping,
-        }
-
         // add new
-        const physObj = new SoftObject(this.geometry.vertices, this.geometry.faces, 10, options);
+        const physObj = new SoftObject(this.geometry.vertices, this.geometry.faces, options);
         this.add(physObj);
 
     }
