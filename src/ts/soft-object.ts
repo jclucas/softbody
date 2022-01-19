@@ -148,10 +148,15 @@ export class SoftObject implements PhysObject, SoftOptions {
 
         // create wireframe geometry
         const debug_line_geom = new THREE.BufferGeometry().setFromPoints(debug_line_points);
-        this.debug_lines = new THREE.LineSegments(debug_line_geom, new THREE.LineBasicMaterial({color: 0xff0000}));
+        this.debug_lines = new THREE.LineSegments(debug_line_geom, new THREE.LineBasicMaterial({ color: 0xff0000 }));
 
         // create three.js mesh
-        const material = new THREE.MeshPhongMaterial({ color: 0x880000, side: THREE.DoubleSide });
+        const material = new THREE.MeshPhongMaterial({ 
+            color: 0x880000, 
+            side: THREE.DoubleSide,
+            opacity: 0.5, 
+            transparent: true
+        });
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
         geometry.setIndex(new THREE.Uint16BufferAttribute(indices_tri, 1));
@@ -219,6 +224,8 @@ export class SoftObject implements PhysObject, SoftOptions {
 
         // add additional force callback
         world.removeEventListener('postStep', this.postStep.bind(this));
+
+        scene.remove(this.debug_lines);
 
         this.debug_meshes.forEach((m: THREE.Mesh) => {
             scene.remove(m);
