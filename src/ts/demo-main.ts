@@ -6,20 +6,23 @@ import { Demo } from "./demo";
 import Hand from "./hand";
 import { SoftObject, SoftType } from './soft-object';
 
+type Geometry = {
+    vertices: number[];
+    faces: number[][];
+}
+
 export class MainDemo extends Demo {
 
     hand: Hand;
-    geometry;
+    geometry: Geometry;
 
-    constructor(geometry) {
+    constructor(geometry: Geometry) {
         super('demo');
         this.geometry = geometry;
         this.init();
     }
 
     initScene(scene: THREE.Scene, world: CANNON.World, loader: GLTFLoader) {
-
-        scene.background = new THREE.Color( 0x94bcbc );
 
         // add a static surface
         const floor_body = new CANNON.Body({ mass: 0 });

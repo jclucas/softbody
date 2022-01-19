@@ -23,6 +23,7 @@ export class SoftObject implements PhysObject {
     damping: number;
 
     point_radius = 0.01;
+    point_damping = 0.3
     
     debugMeshes: THREE.Mesh[];
 
@@ -33,7 +34,7 @@ export class SoftObject implements PhysObject {
      * @param mass of CANNON.Body
      */
     constructor(vertices: number[], faces: number[][], mass: number, type?: SoftType, 
-        pressure = 10, stiffness = 50, damping = 0.2) {
+        pressure = 1, stiffness = 50, damping = 0.2) {
 
         if (!!type) {
             this.type = type;
@@ -74,6 +75,7 @@ export class SoftObject implements PhysObject {
             const body = new CANNON.Body({ mass: pt_mass });
             body.addShape(new CANNON.Sphere(this.point_radius));
             body.position.set(x, y, z);
+            body.linearDamping = this.point_damping; // air resistance
             this.bodies.push(body);
 
             // debug meshes
@@ -225,7 +227,7 @@ export class SoftObject implements PhysObject {
 
     getSurfaceArea() {
         this.shape.updateBoundingSphereRadius();
-        return this.shape.boundingSphereRadius * 4 * Math.PI / 3;
+        return this.shape.boundingSphereRadius * this.shape.boundingSphereRadius * 4 * Math.PI;
     }
 
 }
