@@ -64,11 +64,14 @@ export class HybridSoftObject implements PhysObject {
 
 
         // create inner body
-        const inner_options = options && { type: SoftType.PRESSURE }
+        const inner_options = options ?? {};
+        inner_options.type = SoftType.PRESSURE;
+        inner_options.color = 0x0000ff;
         this.inner_body = new SoftObject(vertices_inner, faces, inner_options);
 
         // create outer body
-        const outer_options = options && { type: SoftType.MASS_SPRING }
+        const outer_options = options ?? {};
+        outer_options.type = SoftType.PRESSURE;
         this.outer_body = new SoftObject(vertices, faces, outer_options);
 
         // add radial springs

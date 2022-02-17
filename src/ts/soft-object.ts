@@ -16,6 +16,7 @@ export interface SoftOptions {
     point_mass?: number;
     point_radius?: number;
     point_damping?: number;
+    color?: number;
 }
 
 export class SoftObject implements PhysObject, SoftOptions {
@@ -38,6 +39,8 @@ export class SoftObject implements PhysObject, SoftOptions {
     debug_meshes: THREE.Mesh[];
     debug_lines: THREE.LineSegments;
 
+    color: number;
+
     /**
      * Read geometry to a new physics object.
      * @param vertices array of CANNON.Vec3 vertices
@@ -57,6 +60,9 @@ export class SoftObject implements PhysObject, SoftOptions {
         this.point_mass = options?.point_mass ?? 0.05;
         this.point_radius = options?.point_radius ?? 0.01;
         this.point_damping = options?.point_damping ?? 0.3;
+
+        // misc options
+        this.color = options?.color ?? 0xff0000;
 
         const indices_tri = [];
 
@@ -89,7 +95,7 @@ export class SoftObject implements PhysObject, SoftOptions {
 
             // debug meshes
             const geom = new THREE.SphereGeometry(this.point_radius);
-            const mat = new THREE.MeshPhongMaterial({ color: 0xff0088, side: THREE.DoubleSide });
+            const mat = new THREE.MeshPhongMaterial({ color: this.color, side: THREE.DoubleSide });
             const mesh = new THREE.Mesh(geom, mat);
             mesh.position.set(x, y, z);
             this.debug_meshes.push(mesh);
@@ -148,11 +154,11 @@ export class SoftObject implements PhysObject, SoftOptions {
 
         // create wireframe geometry
         const debug_line_geom = new THREE.BufferGeometry().setFromPoints(debug_line_points);
-        this.debug_lines = new THREE.LineSegments(debug_line_geom, new THREE.LineBasicMaterial({ color: 0xff0000 }));
+        this.debug_lines = new THREE.LineSegments(debug_line_geom, new THREE.LineBasicMaterial({ color: this.color }));
 
         // create three.js mesh
         const material = new THREE.MeshPhongMaterial({ 
-            color: 0x880000, 
+            color: this.color, 
             side: THREE.DoubleSide,
             opacity: 0.3, 
             transparent: true
