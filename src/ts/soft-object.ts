@@ -154,7 +154,7 @@ export class SoftObject implements PhysObject, SoftOptions {
         const material = new THREE.MeshPhongMaterial({ 
             color: 0x880000, 
             side: THREE.DoubleSide,
-            opacity: 0.5, 
+            opacity: 0.3, 
             transparent: true
         });
         const geometry = new THREE.BufferGeometry();

@@ -13,8 +13,9 @@ export class HybridSoftObject implements PhysObject {
     outer_body: SoftObject;
 
     springs: CANNON.Spring[];
+    debug_lines: THREE.LineSegments;
 
-    offset = 0.1;
+    offset = 0.2;
     stiffness: number;
     damping: number;
 
@@ -72,7 +73,8 @@ export class HybridSoftObject implements PhysObject {
 
         // add radial springs
         this.springs = [];
-        
+        const debug_line_points = [];
+
         this.inner_body.bodies.forEach((body_a: CANNON.Body, i: number) => {
 
             const body_b = this.outer_body.bodies[i];
@@ -88,7 +90,15 @@ export class HybridSoftObject implements PhysObject {
             spring.damping = this.damping;
             this.springs.push(spring);
 
+            // add debug line
+            debug_line_points.push(vec1, vec2);
+
         });
+
+        // create wireframe geometry
+        const debug_line_geom = new THREE.BufferGeometry().setFromPoints(debug_line_points);
+        this.debug_lines = new THREE.LineSegments(debug_line_geom, new THREE.LineBasicMaterial({ color: 0xffff00 }));
+ 
     
     }
     
@@ -100,12 +110,25 @@ export class HybridSoftObject implements PhysObject {
         this.inner_body.update();
         this.outer_body.update();
 
+        const debug_line_points = [];
+
+        // update lines to spring position
+        this.springs.forEach((spring) => {
+            const p1 = spring.bodyA.position as unknown as THREE.Vector3;
+            const p2 = spring.bodyB.position as unknown as THREE.Vector3;
+            debug_line_points.push(p1, p2);
+        });
+        
+        this.debug_lines.geometry.setFromPoints(debug_line_points);
+
     };
 
     addSelf(scene: THREE.Scene, world: CANNON.World): void  {
 
         this.inner_body.addSelf(scene, world);
         this.outer_body.addSelf(scene, world);
+
+        scene.add(this.debug_lines);
         
         // add additional force callback
         world.addEventListener('postStep', this.postStep.bind(this));
@@ -116,6 +139,8 @@ export class HybridSoftObject implements PhysObject {
 
         // remove additional force callback
         world.removeEventListener('postStep', this.postStep.bind(this));
+
+        scene.remove(this.debug_lines);
 
         this.inner_body.removeSelf(scene, world);
         this.outer_body.removeSelf(scene, world);

@@ -4,7 +4,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
 import { Demo } from "./demo";
 import { Hand } from "./hand";
-import { SoftObject, SoftOptions } from './soft-object';
+import { SoftOptions } from './soft-object';
 import { HybridSoftObject } from './hybrid-soft-object';
 
 type Geometry = {
