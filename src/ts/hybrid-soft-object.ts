@@ -12,9 +12,17 @@ export class HybridSoftObject implements PhysObject {
     inner_body: SoftObject;
     outer_body: SoftObject;
 
+    springs: CANNON.Spring[];
+
     offset = 0.1;
+    stiffness: number;
+    damping: number;
 
     constructor(vertices: number[], faces: number[][], options?: SoftOptions) {
+        
+        this.stiffness = options?.stiffness ?? 200;
+        this.damping = options?.damping ?? 0.4;
+
 
         // triangulate
         const indices_tri = [];
@@ -63,6 +71,24 @@ export class HybridSoftObject implements PhysObject {
         this.outer_body = new SoftObject(vertices, faces, outer_options);
 
         // add radial springs
+        this.springs = [];
+        
+        this.inner_body.bodies.forEach((body_a: CANNON.Body, i: number) => {
+
+            const body_b = this.outer_body.bodies[i];
+
+            const vec1 = new THREE.Vector3(body_a.position.x, body_a.position.y, body_a.position.z);
+            const vec2 = new THREE.Vector3(body_b.position.x, body_b.position.y, body_b.position.z);
+            const spring = new CANNON.Spring();
+            spring.bodyA = body_a;
+            spring.bodyB = body_b;
+            spring.restLength = vec1.distanceTo(vec2);
+            // @ts-ignore -- typo
+            spring.stiffness = this.stiffness;
+            spring.damping = this.damping;
+            this.springs.push(spring);
+
+        });
     
     }
     
@@ -80,13 +106,30 @@ export class HybridSoftObject implements PhysObject {
 
         this.inner_body.addSelf(scene, world);
         this.outer_body.addSelf(scene, world);
+        
+        // add additional force callback
+        world.addEventListener('postStep', this.postStep.bind(this));
 
     }
 
     removeSelf(scene: THREE.Scene, world: CANNON.World): void {
 
+        // remove additional force callback
+        world.removeEventListener('postStep', this.postStep.bind(this));
+
         this.inner_body.removeSelf(scene, world);
         this.outer_body.removeSelf(scene, world);
+
+    }
+
+    postStep() {
+        
+        // apply spring force
+        this.springs.forEach(spring => {
+            if (spring.bodyA && spring.bodyB) {
+                spring.applyForce();
+            }
+        });
 
     }
 
