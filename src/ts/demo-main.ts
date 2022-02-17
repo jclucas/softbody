@@ -85,13 +85,13 @@ export class MainDemo extends Demo {
 
     }
 
-    respawn(options: SoftOptions) {
+    respawn(o_options: SoftOptions, i_options: SoftOptions) {
 
         // remove existing body
         this.remove(0);
 
         // add new
-        const physObj = new HybridSoftObject(this.geometry.vertices, this.geometry.faces, options);
+        const physObj = new HybridSoftObject(this.geometry.vertices, this.geometry.faces, o_options, i_options);
         this.add(physObj);
 
     }

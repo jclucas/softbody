@@ -19,11 +19,10 @@ export class HybridSoftObject implements PhysObject {
     stiffness: number;
     damping: number;
 
-    constructor(vertices: number[], faces: number[][], options?: SoftOptions) {
+    constructor(vertices: number[], faces: number[][], o_options?: SoftOptions, i_options?: SoftOptions) {
         
-        this.stiffness = options?.stiffness ?? 200;
-        this.damping = options?.damping ?? 0.4;
-
+        this.stiffness = 200;
+        this.damping = 0.4;
 
         // triangulate
         const indices_tri = [];
@@ -64,13 +63,13 @@ export class HybridSoftObject implements PhysObject {
 
 
         // create inner body
-        const inner_options = options ?? {};
+        const inner_options = i_options ?? {};
         inner_options.type = SoftType.PRESSURE;
         inner_options.color = 0x0000ff;
         this.inner_body = new SoftObject(vertices_inner, faces, inner_options);
 
         // create outer body
-        const outer_options = options ?? {};
+        const outer_options = o_options ?? {};
         outer_options.type = SoftType.PRESSURE;
         this.outer_body = new SoftObject(vertices, faces, outer_options);
 
@@ -102,7 +101,6 @@ export class HybridSoftObject implements PhysObject {
         const debug_line_geom = new THREE.BufferGeometry().setFromPoints(debug_line_points);
         this.debug_lines = new THREE.LineSegments(debug_line_geom, new THREE.LineBasicMaterial({ color: 0xffff00 }));
  
-    
     }
     
     /**

@@ -10,15 +10,24 @@ const form = document.getElementById('controls') as HTMLFormElement;
 
 form.addEventListener('submit', (event) => {
     event.preventDefault();
-    const pressure = form.elements['pressure'];
-    const stiffness = form.elements['spring'];
-    const damping = form.elements['damping'];
+    const inner_pressure = form.elements['inner_pressure'];
+    const inner_spring = form.elements['inner_spring'];
+    const inner_damping = form.elements['inner_damping'];
+    const outer_pressure = form.elements['outer_pressure'];
+    const outer_spring = form.elements['outer_spring'];
+    const outer_damping = form.elements['outer_damping'];
     
-    const options: SoftOptions = {
-        pressure: pressure.value,
-        stiffness: stiffness.value,
-        damping: damping.value,
+    const inner_options: SoftOptions = {
+        pressure: inner_pressure.value,
+        stiffness: inner_spring.value,
+        damping: inner_damping.value,
     }
-    
-    demo.respawn(options);
+        
+    const outer_options: SoftOptions = {
+        pressure: outer_pressure.value,
+        stiffness: outer_spring.value,
+        damping: outer_damping.value,
+    }
+
+    demo.respawn(inner_options, outer_options);
 });
