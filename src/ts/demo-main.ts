@@ -5,6 +5,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { Demo } from "./demo";
 import { Hand } from "./hand";
 import { SoftObject, SoftOptions } from './soft-object';
+import { HybridSoftObject } from './hybrid-soft-object';
 
 type Geometry = {
     vertices: number[];
@@ -76,7 +77,7 @@ export class MainDemo extends Demo {
         });
 
         // add test object
-        const physObj = new SoftObject(this.geometry.vertices, this.geometry.faces);
+        const physObj = new HybridSoftObject(this.geometry.vertices, this.geometry.faces);
         this.add(physObj);
 
         // for interaction with physics objects
@@ -90,7 +91,7 @@ export class MainDemo extends Demo {
         this.remove(0);
 
         // add new
-        const physObj = new SoftObject(this.geometry.vertices, this.geometry.faces, options);
+        const physObj = new HybridSoftObject(this.geometry.vertices, this.geometry.faces, options);
         this.add(physObj);
 
     }
