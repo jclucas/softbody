@@ -1,27 +1,41 @@
 import './style.css';
 import { MainDemo } from "./ts/demo-main";
-import { SoftOptions } from './ts/soft-object';
+import { SoftOptions, SoftType } from './ts/soft-object';
 import { icosphere_3 } from './assets/icosphere-3';
 
 const demo = new MainDemo(icosphere_3);
 demo.loop();
 
 const form = document.getElementById('controls') as HTMLFormElement;
+const modelSelect = document.getElementById('model') as HTMLSelectElement;
+
+modelSelect.addEventListener('change', (event) => {
+    const selected: string = modelSelect.selectedOptions[0].value;
+    const ip = document.getElementById('inner_pressure') as HTMLInputElement;
+    const is = document.getElementById('inner_spring') as HTMLInputElement;
+    const id = document.getElementById('inner_damping') as HTMLInputElement;
+
+    if (selected === 'hybrid') {
+        ip.disabled = false;
+        is.disabled = false;
+        id.disabled = false;
+    } else {
+        ip.disabled = true;
+        is.disabled = true;
+        id.disabled = true;
+    }
+});
+
 
 form.addEventListener('submit', (event) => {
     event.preventDefault();
+    const model = form.elements['model'];
     const inner_pressure = form.elements['inner_pressure'];
     const inner_spring = form.elements['inner_spring'];
     const inner_damping = form.elements['inner_damping'];
     const outer_pressure = form.elements['outer_pressure'];
     const outer_spring = form.elements['outer_spring'];
     const outer_damping = form.elements['outer_damping'];
-    
-    const inner_options: SoftOptions = {
-        pressure: inner_pressure.value,
-        stiffness: inner_spring.value,
-        damping: inner_damping.value,
-    }
         
     const outer_options: SoftOptions = {
         pressure: outer_pressure.value,
@@ -29,5 +43,14 @@ form.addEventListener('submit', (event) => {
         damping: outer_damping.value,
     }
 
-    demo.respawn(inner_options, outer_options);
+    if (model.value === 'hybrid') {
+        const inner_options: SoftOptions = {
+            pressure: inner_pressure.value,
+            stiffness: inner_spring.value,
+            damping: inner_damping.value,
+        }
+        demo.respawn(outer_options, inner_options);
+    } else {
+        demo.respawn(outer_options, undefined, SoftType.PRESSURE);
+    }
 });
