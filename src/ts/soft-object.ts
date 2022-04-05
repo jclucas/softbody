@@ -52,7 +52,7 @@ export class SoftObject implements PhysObject, SoftOptions {
         this.type = options?.type ?? SoftType.PRESSURE;
 
         // spring options
-        this.pressure = this.type === SoftType.MASS_SPRING ? 0 : options?.pressure ?? 5;
+        this.pressure = this.type === SoftType.MASS_SPRING ? 0 : options?.pressure ?? 50;
         this.stiffness = options?.stiffness ?? 200;
         this.damping = options?.damping ?? 0.4;
 
@@ -255,16 +255,32 @@ export class SoftObject implements PhysObject, SoftOptions {
         });
 
         // apply volume force
-        const force = 1 / this.getVolume() * this.getSurfaceArea() * this.pressure;
-        
-        let center = new CANNON.Vec3();
-        this.bodies.forEach(body => center.vadd(body.position, center));
-        center.scale(1 / this.bodies.length, center);
+        const force = -1 / this.getVolume() *  this.pressure;
+        const tris = this.shape.indices.length / 3;
 
-        this.bodies.forEach((body) => {
-            const normal = body.position.vsub(center).unit();
-            body.applyForce(normal.scale(force), body.position);
-        });
+        for (let i = 0; i < tris; i++) {
+
+            // get area of triangle
+            let a = new CANNON.Vec3();
+            let b = new CANNON.Vec3();
+            let c = new CANNON.Vec3();
+            this.shape.getTriangleVertices(i, a, b, c);
+            const tri_area = area(a, b, c);
+
+            // get surface normal
+            const normal = new CANNON.Vec3();
+            CANNON.Trimesh.computeNormal(a, b, c, normal);
+
+            // get vertex indices
+            const a_idx = this.shape.indices[3*i];
+            const b_idx = this.shape.indices[3*i+1];
+            const c_idx = this.shape.indices[3*i+2];
+
+            // apply force to each body
+            this.bodies[a_idx].applyForce(normal.scale(force * tri_area), this.bodies[a_idx].position);
+            this.bodies[b_idx].applyForce(normal.scale(force * tri_area), this.bodies[b_idx].position);
+            this.bodies[c_idx].applyForce(normal.scale(force * tri_area), this.bodies[c_idx].position);
+        }
 
     }
 
