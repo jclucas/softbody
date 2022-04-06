@@ -2,6 +2,8 @@ import './style.css';
 import { MainDemo } from "./ts/demo-main";
 import { SoftOptions, SoftType } from './ts/soft-object';
 import { icosphere_3 } from './assets/icosphere-3';
+import { icosphere } from './assets/icosphere';
+import { bunny } from './assets/bunny';
 
 const demo = new MainDemo(icosphere_3);
 demo.loop();
@@ -26,9 +28,9 @@ modelSelect.addEventListener('change', (event) => {
     }
 });
 
-
 form.addEventListener('submit', (event) => {
     event.preventDefault();
+    const geom = form.elements['geom']
     const model = form.elements['model'];
     const inner_pressure = form.elements['inner_pressure'];
     const inner_spring = form.elements['inner_spring'];
@@ -36,7 +38,16 @@ form.addEventListener('submit', (event) => {
     const outer_pressure = form.elements['outer_pressure'];
     const outer_spring = form.elements['outer_spring'];
     const outer_damping = form.elements['outer_damping'];
-        
+    
+    // load new geometry
+    if (geom.value === 'bunny') {
+        demo.loadGeometry(bunny);
+    } else if (geom.value === 'icosphere_1') { 
+        demo.loadGeometry(icosphere);
+    } else {
+        demo.loadGeometry(icosphere_3);
+    }
+
     const outer_options: SoftOptions = {
         pressure: outer_pressure.value,
         stiffness: outer_spring.value,

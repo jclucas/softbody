@@ -20,7 +20,7 @@ export class MainDemo extends Demo {
 
     constructor(geometry: Geometry) {
         super('demo');
-        this.geometry = geometry;
+        this.loadGeometry(geometry);
         this.init();
     }
 
@@ -72,17 +72,24 @@ export class MainDemo extends Demo {
         right_body.quaternion.setFromEuler(0, -Math.PI / 2, 0);
         world.addBody(right_body);
 
-        // due to converting from obj
-        this.geometry.faces.forEach((face: number[]) => {
-            face.forEach((index, i, arr) => arr[i] = index - 1);
-        });
-
         // add test object
         const physObj = new HybridSoftObject(this.geometry.vertices, this.geometry.faces);
         this.add(physObj);
 
         // for interaction with physics objects
         this.hand = new Hand(world);
+
+    }
+
+    loadGeometry(geometry: Geometry) {
+        
+        // deep copy
+        this.geometry = JSON.parse(JSON.stringify(geometry));
+ 
+        // due to converting from obj
+        this.geometry.faces.forEach((face: number[]) => {
+            face.forEach((index, i, arr) => arr[i] = index - 1);
+        });
 
     }
 
