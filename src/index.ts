@@ -1,8 +1,8 @@
 import './style.css';
 import { MainDemo } from "./ts/demo-main";
 import { SoftOptions, SoftType } from './ts/soft-object';
+import { icosphere_2 } from './assets/icosphere-2';
 import { icosphere_3 } from './assets/icosphere-3';
-import { icosphere } from './assets/icosphere';
 import { bunny } from './assets/bunny';
 
 const demo = new MainDemo(icosphere_3);
@@ -42,8 +42,8 @@ form.addEventListener('submit', (event) => {
     // load new geometry
     if (geom.value === 'bunny') {
         demo.loadGeometry(bunny);
-    } else if (geom.value === 'icosphere_1') { 
-        demo.loadGeometry(icosphere);
+    } else if (geom.value === 'icosphere_2') { 
+        demo.loadGeometry(icosphere_2);
     } else {
         demo.loadGeometry(icosphere_3);
     }
