@@ -4,6 +4,7 @@ import { SoftOptions, SoftType } from './ts/soft-object';
 import { icosphere_2 } from './assets/icosphere-2';
 import { icosphere_3 } from './assets/icosphere-3';
 import { bunny } from './assets/bunny';
+import { HybridOptions } from './ts/hybrid-soft-object';
 
 const demo = new MainDemo(icosphere_3);
 demo.loop();
@@ -16,15 +17,18 @@ modelSelect.addEventListener('change', (event) => {
     const ip = document.getElementById('inner_pressure') as HTMLInputElement;
     const is = document.getElementById('inner_spring') as HTMLInputElement;
     const id = document.getElementById('inner_damping') as HTMLInputElement;
+    const io = document.getElementById('inner_offset') as HTMLInputElement;
 
     if (selected === 'hybrid') {
         ip.disabled = false;
         is.disabled = false;
         id.disabled = false;
+        io.disabled = false;
     } else {
         ip.disabled = true;
         is.disabled = true;
         id.disabled = true;
+        io.disabled = true;
     }
 });
 
@@ -35,6 +39,7 @@ form.addEventListener('submit', (event) => {
     const inner_pressure = form.elements['inner_pressure'];
     const inner_spring = form.elements['inner_spring'];
     const inner_damping = form.elements['inner_damping'];
+    const inner_offset = form.elements['inner_offset'];
     const outer_pressure = form.elements['outer_pressure'];
     const outer_spring = form.elements['outer_spring'];
     const outer_damping = form.elements['outer_damping'];
@@ -60,8 +65,13 @@ form.addEventListener('submit', (event) => {
             stiffness: inner_spring.value,
             damping: inner_damping.value,
         }
-        demo.respawn(outer_options, inner_options);
+        const options: HybridOptions = {
+            inner_options: inner_options,
+            outer_options: outer_options,
+            offset: inner_offset.value
+        }
+        demo.respawn_hybrid(options);
     } else {
-        demo.respawn(outer_options, undefined, SoftType.PRESSURE);
+        demo.respawn_pressure(outer_options);
     }
 });

@@ -5,7 +5,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { Demo } from "./demo";
 import { Hand } from "./hand";
 import { SoftObject, SoftOptions, SoftType } from './soft-object';
-import { HybridSoftObject } from './hybrid-soft-object';
+import { HybridOptions, HybridSoftObject } from './hybrid-soft-object';
 import { PhysObject } from './phys-object';
 
 type Geometry = {
@@ -93,18 +93,24 @@ export class MainDemo extends Demo {
 
     }
 
-    respawn(o_options: SoftOptions, i_options?: SoftOptions, type: SoftType = SoftType.HYBRID) {
+    respawn_pressure(options: SoftOptions) {
 
         // remove existing body
         this.remove(0);
 
         // add new
-        let physObj: PhysObject;
-        if (type === SoftType.HYBRID) {
-            physObj = new HybridSoftObject(this.geometry.vertices, this.geometry.faces, o_options, i_options);
-        } else {
-            physObj = new SoftObject(this.geometry.vertices, this.geometry.faces, o_options);
-        }
+        const physObj = new SoftObject(this.geometry.vertices, this.geometry.faces, options);
+        this.add(physObj);
+
+    }
+
+    respawn_hybrid(options: HybridOptions) {
+
+        // remove existing body
+        this.remove(0);
+
+        // add new
+        const physObj = new HybridSoftObject(this.geometry.vertices, this.geometry.faces, options);
         this.add(physObj);
 
     }

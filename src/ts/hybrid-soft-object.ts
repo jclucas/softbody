@@ -3,6 +3,14 @@ import * as THREE from "three";
 import { PhysObject } from "./phys-object";
 import { SoftObject, SoftOptions, SoftType } from "./soft-object";
 
+export interface HybridOptions {
+    outer_options?: SoftOptions;
+    inner_options?: SoftOptions;
+    offset?: number;
+    stiffness?: number;
+    damping?: number;
+}
+
 export class HybridSoftObject implements PhysObject {
 
     // todo: remove from interface ?
@@ -15,14 +23,19 @@ export class HybridSoftObject implements PhysObject {
     springs: CANNON.Spring[];
     debug_lines: THREE.LineSegments;
 
-    offset = 0.2;
+    offset: number;
     stiffness: number;
     damping: number;
 
-    constructor(vertices: number[], faces: number[][], o_options?: SoftOptions, i_options?: SoftOptions) {
+    constructor(vertices: number[], faces: number[][], options?: HybridOptions) {
         
-        this.stiffness = 200;
-        this.damping = 0.4;
+        // parse options
+        this.offset = options?.offset ?? 0.2;
+        this.stiffness = options?.stiffness ?? 200;
+        this.damping = options?.damping ?? 0.4;
+
+        const inner_options = options?.inner_options ?? {};
+        const outer_options = options?.outer_options ?? {};
 
         // triangulate
         const indices_tri = [];
@@ -63,13 +76,11 @@ export class HybridSoftObject implements PhysObject {
 
 
         // create inner body
-        const inner_options = i_options ?? {};
         inner_options.type = SoftType.PRESSURE;
         inner_options.color = 0x0000ff;
         this.inner_body = new SoftObject(vertices_inner, faces, inner_options);
 
         // create outer body
-        const outer_options = o_options ?? {};
         outer_options.type = SoftType.PRESSURE;
         this.outer_body = new SoftObject(vertices, faces, outer_options);
 
