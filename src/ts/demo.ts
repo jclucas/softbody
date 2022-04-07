@@ -147,11 +147,11 @@ export class Demo {
 
         for (let step = 0; step < steps; step++) {
             this.world.step(1 / 60 / steps);
-            
-            // update all physics objects
-            for (let i = 0; i < this.objects.length; i++) {
-                this.objects[i].update();
-            }
+        }
+
+        // update all physics objects
+        for (let i = 0; i < this.objects.length; i++) {
+            this.objects[i].update();
         }
 
     }

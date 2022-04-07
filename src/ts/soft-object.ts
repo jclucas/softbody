@@ -284,23 +284,6 @@ export class SoftObject implements PhysObject, SoftOptions {
 
     }
 
-    getSurfaceArea() {
-        
-        const tris = this.shape.indices.length / 3;
-        let surfaceArea = 0;
-
-        for (let i = 0; i < tris; i++) {
-            let a = new CANNON.Vec3();
-            let b = new CANNON.Vec3();
-            let c = new CANNON.Vec3();
-            this.shape.getTriangleVertices(i, a, b, c);
-            surfaceArea += area(a, b, c);
-        }
-
-        return Math.abs(surfaceArea);
-
-    }
-
     getVolume() {
 
         const tris = this.shape.indices.length / 3;
