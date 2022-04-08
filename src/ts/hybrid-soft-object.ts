@@ -163,14 +163,15 @@ export class HybridSoftObject implements PhysObject {
         }
         
         // add additional force callback
-        world.addEventListener('postStep', this.postStep.bind(this));
+        this.postStep = this.postStep.bind(this);
+        world.addEventListener('postStep', this.postStep);
 
     }
 
     removeSelf(scene: THREE.Scene, world: CANNON.World): void {
 
         // remove additional force callback
-        world.removeEventListener('postStep', this.postStep.bind(this));
+        world.removeEventListener('postStep', this.postStep);
 
         scene.remove(this.debug_lines);
 

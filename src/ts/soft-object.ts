@@ -241,14 +241,15 @@ export class SoftObject implements PhysObject, SoftOptions {
         }
 
         // add additional force callback
-        world.addEventListener('postStep', this.postStep.bind(this));
+        this.postStep = this.postStep.bind(this);
+        world.addEventListener('postStep', this.postStep);
 
     }
 
     removeSelf(scene: THREE.Scene, world: CANNON.World): void {
 
         // add additional force callback
-        world.removeEventListener('postStep', this.postStep.bind(this));
+        world.removeEventListener('postStep', this.postStep);
 
         if (this.debug) {
 
