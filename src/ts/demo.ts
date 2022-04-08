@@ -53,6 +53,7 @@ export class Demo {
 
         this.world = new CANNON.World();
         this.world.gravity.set(0, -9.8, 0);
+        this.world.broadphase.useBoundingBoxes = true;
 
         // RENDERER
 
