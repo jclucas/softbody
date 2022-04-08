@@ -17,6 +17,7 @@ export interface SoftOptions {
     point_radius?: number;
     point_damping?: number;
     color?: number;
+    debug?: boolean;
 }
 
 export class SoftObject implements PhysObject, SoftOptions {
@@ -40,6 +41,7 @@ export class SoftObject implements PhysObject, SoftOptions {
     debug_lines: THREE.LineSegments;
 
     color: number;
+    debug: boolean;
 
     /**
      * Read geometry to a new physics object.
@@ -63,6 +65,7 @@ export class SoftObject implements PhysObject, SoftOptions {
 
         // misc options
         this.color = options?.color ?? 0xff0000;
+        this.debug = options?.debug ?? true;
 
         const indices_tri = [];
 
@@ -94,11 +97,13 @@ export class SoftObject implements PhysObject, SoftOptions {
             this.bodies.push(body);
 
             // debug meshes
-            const geom = new THREE.SphereGeometry(this.point_radius);
-            const mat = new THREE.MeshPhongMaterial({ color: this.color, side: THREE.DoubleSide });
-            const mesh = new THREE.Mesh(geom, mat);
-            mesh.position.set(x, y, z);
-            this.debug_meshes.push(mesh);
+            if (this.debug) {
+                const geom = new THREE.SphereGeometry(this.point_radius);
+                const mat = new THREE.MeshPhongMaterial({ color: this.color, side: THREE.DoubleSide });
+                const mesh = new THREE.Mesh(geom, mat);
+                mesh.position.set(x, y, z);
+                this.debug_meshes.push(mesh);
+            }
 
         }
 
@@ -146,22 +151,26 @@ export class SoftObject implements PhysObject, SoftOptions {
                 this.springs.push(spring);
 
                 // add debug line
-                debug_line_points.push(vec1, vec2);
+                if (this.debug) {
+                    debug_line_points.push(vec1, vec2);
+                }
 
             });
 
         });
 
         // create wireframe geometry
-        const debug_line_geom = new THREE.BufferGeometry().setFromPoints(debug_line_points);
-        this.debug_lines = new THREE.LineSegments(debug_line_geom, new THREE.LineBasicMaterial({ color: this.color }));
+        if (this.debug) {
+            const debug_line_geom = new THREE.BufferGeometry().setFromPoints(debug_line_points);
+            this.debug_lines = new THREE.LineSegments(debug_line_geom, new THREE.LineBasicMaterial({ color: this.color }));
+        }
 
         // create three.js mesh
         const material = new THREE.MeshPhongMaterial({ 
             color: this.color, 
             side: THREE.DoubleSide,
-            opacity: 0.3, 
-            transparent: true
+            opacity: this.debug ? 0.3 : 1, 
+            transparent: this.debug
         });
         const geometry = new THREE.BufferGeometry();
         geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
@@ -187,23 +196,29 @@ export class SoftObject implements PhysObject, SoftOptions {
             this.shape.vertices[3 * i + 1] = body.position.y;
             this.shape.vertices[3 * i + 2] = body.position.z;
             this.shape.updateBoundingSphereRadius();
-            this.debug_meshes[i].position.set(body.position.x, body.position.y, body.position.z);
+            if (this.debug) {
+                this.debug_meshes[i].position.set(body.position.x, body.position.y, body.position.z);
+            }
         });
 
         vertices.needsUpdate = true;
         this.mesh.geometry.computeBoundingSphere();
         this.mesh.geometry.computeVertexNormals();
 
-        const debug_line_points = [];
+        if (this.debug) {
 
-        // update lines to spring position
-        this.springs.forEach((spring) => {
-            const p1 = spring.bodyA.position as unknown as THREE.Vector3;
-            const p2 = spring.bodyB.position as unknown as THREE.Vector3;
-            debug_line_points.push(p1, p2);
-        });
-        
-        this.debug_lines.geometry.setFromPoints(debug_line_points);
+            const debug_line_points = [];
+
+            // update lines to spring position
+            this.springs.forEach((spring) => {
+                const p1 = spring.bodyA.position as unknown as THREE.Vector3;
+                const p2 = spring.bodyB.position as unknown as THREE.Vector3;
+                debug_line_points.push(p1, p2);
+            });
+            
+            this.debug_lines.geometry.setFromPoints(debug_line_points);
+
+        }
 
     };
 
@@ -215,12 +230,16 @@ export class SoftObject implements PhysObject, SoftOptions {
             world.addBody(b);
         });
 
-        this.debug_meshes.forEach((m: THREE.Mesh) => {
-            scene.add(m);
-        });
+        if (this.debug) {
 
-        scene.add(this.debug_lines);
-        
+            this.debug_meshes.forEach((m: THREE.Mesh) => {
+                scene.add(m);
+            });
+
+            scene.add(this.debug_lines);
+
+        }
+
         // add additional force callback
         world.addEventListener('postStep', this.postStep.bind(this));
 
@@ -231,11 +250,15 @@ export class SoftObject implements PhysObject, SoftOptions {
         // add additional force callback
         world.removeEventListener('postStep', this.postStep.bind(this));
 
-        scene.remove(this.debug_lines);
+        if (this.debug) {
 
-        this.debug_meshes.forEach((m: THREE.Mesh) => {
-            scene.remove(m);
-        });
+            scene.remove(this.debug_lines);
+
+            this.debug_meshes.forEach((m: THREE.Mesh) => {
+                scene.remove(m);
+            });
+
+        }
 
         this.bodies.forEach((b: CANNON.Body) => {
             world.remove(b);

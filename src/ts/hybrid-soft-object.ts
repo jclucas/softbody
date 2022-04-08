@@ -9,6 +9,8 @@ export interface HybridOptions {
     offset?: number;
     stiffness?: number;
     damping?: number;
+    color?: number;
+    debug?: boolean;
 }
 
 export class HybridSoftObject implements PhysObject {
@@ -27,13 +29,21 @@ export class HybridSoftObject implements PhysObject {
     stiffness: number;
     damping: number;
 
+    color: number;
+    debug: boolean;
+
     constructor(vertices: number[], faces: number[][], options?: HybridOptions) {
         
-        // parse options
+        // structure options
         this.offset = options?.offset ?? 0.2;
         this.stiffness = options?.stiffness ?? 200;
         this.damping = options?.damping ?? 0.4;
 
+        // visual options
+        this.color = options?.color ?? 0xffff00;
+        this.debug = options?.debug ?? true;
+
+        // component object options
         const inner_options = options?.inner_options ?? {};
         const outer_options = options?.outer_options ?? {};
 
@@ -104,14 +114,18 @@ export class HybridSoftObject implements PhysObject {
             this.springs.push(spring);
 
             // add debug line
-            debug_line_points.push(vec1, vec2);
+            if (this.debug) {
+                debug_line_points.push(vec1, vec2);
+            }
 
         });
 
         // create wireframe geometry
-        const debug_line_geom = new THREE.BufferGeometry().setFromPoints(debug_line_points);
-        this.debug_lines = new THREE.LineSegments(debug_line_geom, new THREE.LineBasicMaterial({ color: 0xffff00 }));
- 
+        if (this.debug) {
+            const debug_line_geom = new THREE.BufferGeometry().setFromPoints(debug_line_points);
+            this.debug_lines = new THREE.LineSegments(debug_line_geom, new THREE.LineBasicMaterial({ color: this.color }));
+        }
+
     }
     
     /**
@@ -122,16 +136,20 @@ export class HybridSoftObject implements PhysObject {
         this.inner_body.update();
         this.outer_body.update();
 
-        const debug_line_points = [];
+        if (this.debug) {
 
-        // update lines to spring position
-        this.springs.forEach((spring) => {
-            const p1 = spring.bodyA.position as unknown as THREE.Vector3;
-            const p2 = spring.bodyB.position as unknown as THREE.Vector3;
-            debug_line_points.push(p1, p2);
-        });
-        
-        this.debug_lines.geometry.setFromPoints(debug_line_points);
+            const debug_line_points = [];
+
+            // update lines to spring position
+            this.springs.forEach((spring) => {
+                const p1 = spring.bodyA.position as unknown as THREE.Vector3;
+                const p2 = spring.bodyB.position as unknown as THREE.Vector3;
+                debug_line_points.push(p1, p2);
+            });
+            
+            this.debug_lines.geometry.setFromPoints(debug_line_points);
+
+        }
 
     };
 
@@ -140,7 +158,9 @@ export class HybridSoftObject implements PhysObject {
         this.inner_body.addSelf(scene, world);
         this.outer_body.addSelf(scene, world);
 
-        scene.add(this.debug_lines);
+        if (this.debug) {
+            scene.add(this.debug_lines);
+        }
         
         // add additional force callback
         world.addEventListener('postStep', this.postStep.bind(this));

@@ -36,6 +36,7 @@ form.addEventListener('submit', (event) => {
     event.preventDefault();
     const geom = form.elements['geom']
     const model = form.elements['model'];
+    const debug = form.elements['debug'];
     const inner_pressure = form.elements['inner_pressure'];
     const inner_spring = form.elements['inner_spring'];
     const inner_damping = form.elements['inner_damping'];
@@ -57,6 +58,7 @@ form.addEventListener('submit', (event) => {
         pressure: outer_pressure.value,
         stiffness: outer_spring.value,
         damping: outer_damping.value,
+        debug: debug.checked
     }
 
     if (model.value === 'hybrid') {
@@ -64,11 +66,13 @@ form.addEventListener('submit', (event) => {
             pressure: inner_pressure.value,
             stiffness: inner_spring.value,
             damping: inner_damping.value,
+            debug: debug.checked
         }
         const options: HybridOptions = {
             inner_options: inner_options,
             outer_options: outer_options,
-            offset: inner_offset.value
+            offset: inner_offset.value,
+            debug: debug.checked
         }
         demo.respawn_hybrid(options);
     } else {

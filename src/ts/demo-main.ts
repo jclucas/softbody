@@ -4,9 +4,8 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
 import { Demo } from "./demo";
 import { Hand } from "./hand";
-import { SoftObject, SoftOptions, SoftType } from './soft-object';
+import { SoftObject, SoftOptions } from './soft-object';
 import { HybridOptions, HybridSoftObject } from './hybrid-soft-object';
-import { PhysObject } from './phys-object';
 
 type Geometry = {
     vertices: number[];
